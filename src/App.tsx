@@ -1,9 +1,13 @@
+import Navbar from "./components/layout/Navbar";
+import Home from "./components/sections/HomeScreen";
+
 function App() {
   return (
-    <div className="min-h-screen">
-      <h1 className="text-2xl font-bold">KinerjaHub</h1>
+    <div className="min-h-screen bg-(--color-background)">
+      <Navbar />
+      <Home />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
