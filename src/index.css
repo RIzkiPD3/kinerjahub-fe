@@ -8,6 +8,7 @@
   --color-secondary: #8b5cf6;
   --color-accent: #f97316;
   --color-muted: #e2e8f0;
+  --color-muted-foreground: #64748b;
   --color-border: #cbd5e1;
   --color-card: #ffffff;
 }
@@ -20,6 +21,7 @@
   --color-secondary: #a78bfa;
   --color-accent: #fb923c;
   --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
   --color-border: #334155;
   --color-card: #111827;
 }
