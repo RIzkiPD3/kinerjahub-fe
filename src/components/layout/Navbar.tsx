@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AuthModal from "../auth/authModal";
+import AuthModal from "../auth/AuthModal";
 
 const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
