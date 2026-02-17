@@ -9,3 +9,4 @@ export type AuthContextType = {
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
 );
+// hanya export contextnya saja

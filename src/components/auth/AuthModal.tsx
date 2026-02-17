@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { X, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useNavigate } from "react-router-dom";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -9,6 +11,8 @@ interface AuthModalProps {
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -20,7 +24,12 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle login/register logic here
-    console.log(isLogin ? "Login" : "Register", formData);
+   if (isLogin) {
+    login()
+    navigate("/dashboard")
+    //ini bakal navigate ke mwnu utam, ganti sesuai kebutuhan
+    onClose()
+   }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
