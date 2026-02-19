@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import AuthModal from "../auth/AuthModal";
 
 const Navbar = () => {
@@ -6,50 +7,43 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="w-full bg-linear-to-r from-(--color-primary) to-(--color-secondary) shadow-lg">
+      <nav className="w-full bg-primary border-b border-white/10 shadow-md">
         <div className="w-full px-6 py-4">
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <div className="text-2xl font-bold text-white drop-shadow-lg">
+            <Link
+              to="/"
+              className="text-2xl font-bold text-white drop-shadow-lg transition-transform hover:scale-105 active:scale-95"
+            >
               Kinerja<span className="text-yellow-300">Hub</span>
-            </div>
+            </Link>
 
             {/* Menu tengah */}
             <div className="hidden md:flex items-center space-x-8">
               <a
-                href="#fitur"
+                href="/dashboard"
                 className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
               >
-                Fitur
+                Dashboard
               </a>
               <a
-                href="#harga"
+                href="#about"
                 className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
               >
-                Harga
+                About us
               </a>
               <a
-                href="#tentang"
+                href="#contact"
                 className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
               >
-                Tentang
-              </a>
-              <a
-                href="#kontak"
-                className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
-              >
-                Kontak
+                Contact
               </a>
             </div>
 
-            {/* Tombol Masuk */}
             <div className="flex items-center space-x-4">
-              <button className="hidden md:block text-white/90 hover:text-white font-medium">
-                Daftar
-              </button>
               <button
                 onClick={() => setIsAuthModalOpen(true)}
-                className="bg-white text-(--color-primary) px-6 py-2 rounded-full font-semibold hover:shadow-lg hover:scale-105 transition-all"
+                className="bg-white text-primary px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
               >
                 Masuk
               </button>
