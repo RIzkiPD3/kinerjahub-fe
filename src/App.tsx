@@ -1,14 +1,23 @@
+import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Home from "./components/sections/HomeScreen";
-
-//import { ProtectedRoute } from "./components/auth/protected-route";
-//pakai sesuai keperluannya
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <div className="min-h-screen bg-(--color-background)">
-      <Navbar />
-      <Home />
+    <div className="min-h-screen bg-background text-foreground">
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Navbar />
+              <Home />
+            </>
+          }
+        />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
     </div>
   );
 }
