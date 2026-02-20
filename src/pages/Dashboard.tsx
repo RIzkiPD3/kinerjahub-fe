@@ -1,15 +1,14 @@
 import { useState } from "react";
 import {
   Users,
-  ShoppingBag,
-  TrendingUp,
+  Building,
+  Briefcase,
   Settings,
   LogOut,
   Bell,
   Search,
   LayoutDashboard,
-  Box,
-  ClipboardList,
+  Calendar,
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -27,28 +26,28 @@ const Dashboard = () => {
 
   const stats = [
     {
-      title: "Total Penjualan",
-      value: "Rp 12.450.000",
-      icon: <TrendingUp className="text-green-500" />,
-      trend: "+12%",
+      title: "Total Karyawan",
+      value: "156",
+      icon: <Users className="text-blue-500" />,
+      trend: "+4",
     },
     {
-      title: "Produk Terjual",
-      value: "1,250",
-      icon: <ShoppingBag className="text-blue-500" />,
-      trend: "+5%",
+      title: "Total Departemen",
+      value: "8",
+      icon: <Building className="text-green-500" />,
+      trend: "0",
     },
     {
-      title: "Pelanggan Baru",
-      value: "48",
-      icon: <Users className="text-orange-500" />,
-      trend: "+18%",
-    },
-    {
-      title: "Stok Rendah",
+      title: "Posisi Aktif",
       value: "12",
-      icon: <Box className="text-red-500" />,
-      trend: "-2",
+      icon: <Briefcase className="text-orange-500" />,
+      trend: "+2",
+    },
+    {
+      title: "Permohonan Cuti",
+      value: "5",
+      icon: <Calendar className="text-red-500" />,
+      trend: "-3",
     },
   ];
 
@@ -74,16 +73,16 @@ const Dashboard = () => {
             )}
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-all text-white/70 hover:text-white">
-            <ShoppingBag size={20} />
-            <span className="font-medium">Penjualan</span>
+            <Building size={20} />
+            <span className="font-medium">Department</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-all text-white/70 hover:text-white">
-            <Box size={20} />
-            <span className="font-medium">Produk</span>
+            <Briefcase size={20} />
+            <span className="font-medium">Division</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition-all text-white/70 hover:text-white">
-            <ClipboardList size={20} />
-            <span className="font-medium">Laporan</span>
+            <Users size={20} />
+            <span className="font-medium">User</span>
           </button>
         </nav>
 
@@ -113,7 +112,7 @@ const Dashboard = () => {
             />
             <input
               type="text"
-              placeholder="Cari data, produk, atau transaksi..."
+              placeholder="Cari karyawan, departemen, atau laporan..."
               className="w-full pl-10 pr-4 py-2 bg-secondary rounded-full border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
             />
           </div>
@@ -150,7 +149,7 @@ const Dashboard = () => {
                 Halo, {user?.name?.split(" ")[0] || "Partner"}! 👋
               </h2>
               <p className="text-muted-foreground">
-                Berikut adalah ringkasan kinerja bisnis Anda hari ini.
+                Berikut adalah ringkasan operasional perusahaan Anda hari ini.
               </p>
             </div>
             <div className="flex gap-3">
@@ -158,7 +157,7 @@ const Dashboard = () => {
                 Unduh Laporan
               </button>
               <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">
-                + Tambah Transaksi
+                + Tambah Karyawan
               </button>
             </div>
           </div>
@@ -194,7 +193,9 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-border">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold">Grafik Penjualan Mingguan</h3>
+                <h3 className="text-lg font-bold">
+                  Statistik Kehadiran Mingguan
+                </h3>
                 <select className="text-sm bg-secondary border-none rounded-lg px-2 py-1 outline-none font-medium">
                   <option>7 Hari Terakhir</option>
                   <option>30 Hari Terakhir</option>
@@ -211,7 +212,7 @@ const Dashboard = () => {
                       style={{ height: `${h}%` }}
                     >
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-foreground text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        Rp {h * 100}k
+                        {h}% Hadir
                       </div>
                     </div>
                     <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">
@@ -227,28 +228,28 @@ const Dashboard = () => {
               <div className="space-y-6">
                 {[
                   {
-                    name: "John Doe",
-                    action: "Membeli Kopi Gula Aren",
+                    name: "Budi Santoso",
+                    action: "Mencatatkan kehadiran (Check-in)",
                     time: "2 menit yang lalu",
-                    amount: "+Rp 25.000",
+                    status: "Sesuai Jadwal",
                   },
                   {
-                    name: "Jane Smith",
-                    action: "Membeli Roti Bakar",
+                    name: "Siti Aminah",
+                    action: "Mengajukan cuti tahunan",
                     time: "15 menit yang lalu",
-                    amount: "+Rp 18.000",
+                    status: "Menunggu Approval",
                   },
                   {
-                    name: "Admin",
-                    action: "Update Stok Kopi",
+                    name: "Admin HR",
+                    action: "Update divisi IT",
                     time: "1 jam yang lalu",
-                    amount: "-10 Items",
+                    status: "Pembaruan Data",
                   },
                   {
-                    name: "Budi",
-                    action: "Membeli Paket Sarapan",
+                    name: "Ahmad",
+                    action: "Mencatatkan kehadiran (Check-out)",
                     time: "3 jam yang lalu",
-                    amount: "+Rp 45.000",
+                    status: "Sesuai Jadwal",
                   },
                 ].map((act, i) => (
                   <div key={i} className="flex items-center gap-4">
@@ -262,10 +263,8 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p
-                        className={`text-xs font-bold ${act.amount.startsWith("+") ? "text-green-600" : "text-foreground"}`}
-                      >
-                        {act.amount}
+                      <p className="text-xs font-bold text-foreground">
+                        {act.status}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {act.time}
