@@ -7,50 +7,47 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { useState, useEffect, } from "react";
+
+import { getUsers, type User } from "@/services/userService";
 
 const UsersPage = () => {
-  const users = [
-    {
-      id: 1,
-      name: "Budi Santoso",
-      email: "budi@kinerjahub.com",
-      role: "Manager",
-      dept: "Information Technology",
-      avatar: "B",
-    },
-    {
-      id: 2,
-      name: "Siti Aminah",
-      email: "siti@kinerjahub.com",
-      role: "Supervisor",
-      dept: "Human Resources",
-      avatar: "S",
-    },
-    {
-      id: 3,
-      name: "Andi Wijaya",
-      email: "andi@kinerjahub.com",
-      role: "Staff",
-      dept: "Marketing",
-      avatar: "A",
-    },
-    {
-      id: 4,
-      name: "Jessica Low",
-      email: "jessica@kinerjahub.com",
-      role: "Staff",
-      dept: "Information Technology",
-      avatar: "J",
-    },
-    {
-      id: 5,
-      name: "Rizky Pratama",
-      email: "rizky@kinerjahub.com",
-      role: "Admin",
-      dept: "Operations",
-      avatar: "R",
-    },
-  ];
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchUsers = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const data = await getUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError("Gagal mengambil data user");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Loading users...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        {error}
+      </div>
+    );
+  }
+
 
   return (
     <div className="p-8 space-y-8">
@@ -74,7 +71,7 @@ const UsersPage = () => {
         {users.map((user) => (
           <div
             key={user.id}
-            className="bg-white rounded-2xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow relative group"
+            className="bg-white rounded-2xl shadow-sm border border-border p-6 relative"
           >
             <button className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
               <MoreVertical size={18} />
@@ -82,44 +79,43 @@ const UsersPage = () => {
 
             <div className="flex items-start gap-4 mb-6">
               <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-bold shadow-lg">
-                {user.avatar}
+                {user.name.charAt(0).toUpperCase()}
               </div>
+
               <div className="flex-1">
                 <h4 className="text-lg font-bold text-foreground">
                   {user.name}
                 </h4>
-                <p className="text-sm text-primary font-medium">{user.role}</p>
-                <div className="flex items-center gap-2 mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
-                  {user.dept}
+
+                <p className="text-sm text-primary font-medium">
+                  {user.role?.name ?? "No Role"}
+                </p>
+
+                <div className="mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
+                  Dept ID: {user.department_id}
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 pt-4 border-t border-border">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Mail size={16} className="text-primary/60" />
+                <Mail size={16} />
                 {user.email}
               </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Phone size={16} className="text-primary/60" />
-                +62 812-3456-7890
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <MapPin size={16} className="text-primary/60" />
-                Jakarta, Indonesia
-              </div>
-            </div>
 
-            <div className="mt-6 flex gap-2">
-              <button className="flex-1 py-2 bg-secondary hover:bg-border rounded-lg text-xs font-bold transition-colors text-foreground">
-                Profil Lengkap
-              </button>
-              <button className="flex-1 py-2 border border-primary/20 text-primary hover:bg-primary/5 rounded-lg text-xs font-bold transition-colors">
-                Kirim Pesan
-              </button>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <Phone size={16} />
+                -
+              </div>
+
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <MapPin size={16} />
+                Org: {user.organization_id}
+              </div>
             </div>
           </div>
         ))}
+
 
         {/* Add shortcut card */}
         <button className="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20 p-6 flex flex-col items-center justify-center gap-4 hover:bg-primary/10 transition-all group">
