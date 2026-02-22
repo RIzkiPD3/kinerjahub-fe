@@ -8,13 +8,16 @@ import {
   MapPin,
 } from "lucide-react";
 import { useState, useEffect, } from "react";
-
-import { getUsers, type User } from "@/services/userService";
+import { getUsers, deleteUser, type User } from "@/services/userService";
+import DeleteUserModal from "@/components/users/DeleteUserModal";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const fetchUsers = async (): Promise<void> => {
     try {
@@ -31,6 +34,37 @@ const UsersPage = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+  const handleClickOutside = () => {
+    setActiveMenuId(null);
+  };
+
+  window.addEventListener("click", handleClickOutside);
+  return () => window.removeEventListener("click", handleClickOutside);
+}, []);
+
+
+  const handleDelete = async (): Promise<void> => {
+    if (!deleteTargetId) return;
+
+    try {
+      setIsDeleting(true);
+
+      await deleteUser(deleteTargetId);
+
+      setUsers((prev) =>
+        prev.filter((user) => user.id !== deleteTargetId)
+      );
+
+      setDeleteTargetId(null);
+    } catch (error) {
+      console.error("Delete failed", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
 
   if (loading) {
     return (
@@ -73,9 +107,57 @@ const UsersPage = () => {
             key={user.id}
             className="bg-white rounded-2xl shadow-sm border border-border p-6 relative"
           >
-            <button className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
-              <MoreVertical size={18} />
-            </button>
+            <div className="absolute top-4 right-4">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenuId(
+                    activeMenuId === user.id
+                      ? null
+                      : user.id
+                  );
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <MoreVertical size={18} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {activeMenuId === user.id && (
+                <div
+                  onClick={(e) =>
+                    e.stopPropagation()
+                  }
+                  className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-md z-20"
+                >
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    onClick={() => {
+                      console.log(
+                        "Edit user",
+                        user.id
+                      );
+                      setActiveMenuId(null);
+                    }}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      setDeleteTargetId(
+                        user.id
+                      );
+                      setActiveMenuId(null);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+
 
             <div className="flex items-start gap-4 mb-6">
               <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-bold shadow-lg">
@@ -149,6 +231,12 @@ const UsersPage = () => {
           </span>
         </div>
       </div>
+      <DeleteUserModal
+        isOpen={!!deleteTargetId}
+        isLoading={isDeleting}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 };
