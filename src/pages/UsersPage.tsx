@@ -8,8 +8,9 @@ import {
   MapPin,
 } from "lucide-react";
 import { useState, useEffect, } from "react";
-import { getUsers, deleteUser, type User } from "@/services/userService";
+import { getUsers, deleteUser, updateUser, type User } from "@/services/userService";
 import DeleteUserModal from "@/components/users/DeleteUserModal";
+import UpdateUserModal from "@/components/users/UpdateUserModal";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -17,6 +18,8 @@ const UsersPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [updateTarget, setUpdateTarget] = useState<User | null>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const fetchUsers = async (): Promise<void> => {
@@ -36,13 +39,13 @@ const UsersPage = () => {
   }, []);
 
   useEffect(() => {
-  const handleClickOutside = () => {
-    setActiveMenuId(null);
-  };
+    const handleClickOutside = () => {
+      setActiveMenuId(null);
+    };
 
-  window.addEventListener("click", handleClickOutside);
-  return () => window.removeEventListener("click", handleClickOutside);
-}, []);
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
 
 
   const handleDelete = async (): Promise<void> => {
@@ -64,6 +67,43 @@ const UsersPage = () => {
       setIsDeleting(false);
     }
   };
+
+  const handleUpdate = async (
+    id: string,
+    data: {
+      name: string;
+      email: string;
+      password?: string;
+    }
+  ): Promise<void> => {
+    try {
+      setIsUpdating(true);
+
+      const updated = await updateUser(
+        id,
+        data
+      );
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === id
+            ? {
+              ...u,
+              name: updated.name,
+              email: updated.email,
+            }
+            : u
+        )
+      );
+
+      setUpdateTarget(null);
+    } catch (error) {
+      console.error("Update failed", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
 
 
   if (loading) {
@@ -133,6 +173,7 @@ const UsersPage = () => {
                   <button
                     className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                     onClick={() => {
+                      setUpdateTarget(user);
                       console.log(
                         "Edit user",
                         user.id
@@ -236,6 +277,14 @@ const UsersPage = () => {
         isLoading={isDeleting}
         onClose={() => setDeleteTargetId(null)}
         onConfirm={handleDelete}
+      />
+      <UpdateUserModal
+        key={updateTarget?.id}
+        isOpen={updateTarget !== null}
+        user={updateTarget}
+        isLoading={isUpdating}
+        onClose={() => setUpdateTarget(null)}
+        onSubmit={handleUpdate}
       />
     </div>
   );
