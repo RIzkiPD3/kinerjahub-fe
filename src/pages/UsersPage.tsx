@@ -4,13 +4,13 @@ import {
   Search,
   MoreVertical,
   Mail,
-  Phone,
-  MapPin,
+  GitBranch,
 } from "lucide-react";
 import { useState, useEffect, } from "react";
 import { getUsers, deleteUser, updateUser, type User } from "@/services/userService";
 import DeleteUserModal from "@/components/users/DeleteUserModal";
 import UpdateUserModal from "@/components/users/UpdateUserModal";
+import AddUserModal from "@/components/users/AddUserModal";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -21,6 +21,7 @@ const UsersPage = () => {
   const [updateTarget, setUpdateTarget] = useState<User | null>(null);
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
   const fetchUsers = async (): Promise<void> => {
     try {
@@ -135,7 +136,10 @@ const UsersPage = () => {
             Kelola akses pengguna, peran, dan informasi profil karyawan.
           </p>
         </div>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2">
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+        >
           <Plus size={18} />
           Tambah User
         </button>
@@ -149,12 +153,11 @@ const UsersPage = () => {
           >
             <div className="absolute top-4 right-4">
               <button
+                title="Menu"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveMenuId(
-                    activeMenuId === user.id
-                      ? null
-                      : user.id
+                    activeMenuId === user.id ? null : user.id
                   );
                 }}
                 className="text-muted-foreground hover:text-foreground"
@@ -215,7 +218,7 @@ const UsersPage = () => {
                 </p>
 
                 <div className="mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
-                  Dept ID: {user.department_id}
+                  {user.department?.name ?? "No Dept"} 
                 </div>
               </div>
             </div>
@@ -227,13 +230,8 @@ const UsersPage = () => {
               </div>
 
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Phone size={16} />
-                -
-              </div>
-
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <MapPin size={16} />
-                Org: {user.organization_id}
+                <GitBranch size={16} />
+                {user.division?.name ?? "-"}
               </div>
             </div>
           </div>
@@ -285,6 +283,15 @@ const UsersPage = () => {
         isLoading={isUpdating}
         onClose={() => setUpdateTarget(null)}
         onSubmit={handleUpdate}
+      />
+      <AddUserModal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          setIsAddModalOpen(false);
+          fetchUsers();
+        }}
+        organizationId="default-org"
       />
     </div>
   );
