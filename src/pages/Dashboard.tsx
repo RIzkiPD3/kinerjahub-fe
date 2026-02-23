@@ -1,4 +1,4 @@
-import { Users, Building, Briefcase, Calendar } from "lucide-react";
+import { Users, Building, Briefcase } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 const Dashboard = () => {
@@ -6,28 +6,22 @@ const Dashboard = () => {
 
   const stats = [
     {
-      title: "Total Karyawan",
+      title: "Total User",
       value: "156",
       icon: <Users className="text-blue-500" />,
       trend: "+4",
     },
     {
-      title: "Total Departemen",
+      title: "Total Department",
       value: "8",
       icon: <Building className="text-green-500" />,
       trend: "0",
     },
     {
-      title: "Posisi Aktif",
+      title: "Total Division",
       value: "12",
       icon: <Briefcase className="text-orange-500" />,
       trend: "+2",
-    },
-    {
-      title: "Permohonan Cuti",
-      value: "5",
-      icon: <Calendar className="text-red-500" />,
-      trend: "-3",
     },
   ];
 
@@ -53,7 +47,7 @@ const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, i) => (
           <div
             key={i}
@@ -80,8 +74,8 @@ const Dashboard = () => {
       </div>
 
       {/* Charts/Activity Mockup */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-border">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-border">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold">Statistik Kehadiran Mingguan</h3>
             <select className="text-sm bg-secondary border-none rounded-lg px-2 py-1 outline-none font-medium text-foreground">
@@ -109,61 +103,6 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-border">
-          <h3 className="text-lg font-bold mb-6">Aktivitas Terakhir</h3>
-          <div className="space-y-6">
-            {[
-              {
-                name: "Budi Santoso",
-                action: "Mencatatkan kehadiran (Check-in)",
-                time: "2 menit yang lalu",
-                status: "Sesuai Jadwal",
-              },
-              {
-                name: "Siti Aminah",
-                action: "Mengajukan cuti tahunan",
-                time: "15 menit yang lalu",
-                status: "Menunggu Approval",
-              },
-              {
-                name: "Admin HR",
-                action: "Update divisi IT",
-                time: "1 jam yang lalu",
-                status: "Pembaruan Data",
-              },
-              {
-                name: "Ahmad",
-                action: "Mencatatkan kehadiran (Check-out)",
-                time: "3 jam yang lalu",
-                status: "Sesuai Jadwal",
-              },
-            ].map((act, i) => (
-              <div key={i} className="flex items-center gap-4">
-                <div className="h-10 w-10 bg-secondary rounded-full flex items-center justify-center font-bold text-primary text-sm shadow-inner">
-                  {act.name[0]}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-foreground">
-                    {act.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">{act.action}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-bold text-foreground">
-                    {act.status}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {act.time}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="w-full mt-6 py-2 text-primary font-bold text-sm border-2 border-primary/10 rounded-xl hover:bg-primary/5 transition-all">
-            Lihat Semua Aktivitas
-          </button>
         </div>
       </div>
     </div>
