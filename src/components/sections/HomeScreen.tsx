@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const Home = () => {
   const stats = [
     {
@@ -46,15 +48,21 @@ const Home = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <button className="group bg-primary text-primary-foreground px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 hover:shadow-lg transition-all">
+            <Link
+              to="/register"
+              className="group bg-primary text-primary-foreground px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 hover:shadow-lg transition-all"
+            >
               Mulai Gratis 14 Hari
               <span className="ml-2 group-hover:translate-x-1 inline-block transition-transform">
                 →
               </span>
-            </button>
-            <button className="border-2 border-primary text-primary px-8 py-4 rounded-xl font-semibold text-lg hover:bg-primary/5 transition-all">
+            </Link>
+            <Link
+              to="/login"
+              className="border-2 border-primary text-primary px-8 py-4 rounded-xl font-semibold text-lg hover:bg-primary/5 transition-all"
+            >
               Lihat Demo
-            </button>
+            </Link>
           </div>
 
           {/* Stats */}

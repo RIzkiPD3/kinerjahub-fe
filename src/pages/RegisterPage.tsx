@@ -8,7 +8,6 @@ const RegisterPage = () => {
 
   const handleRegisterSuccess = () => {
     setSuccessMessage("Registrasi berhasil! Silakan login dengan akun Anda.");
-    // Langsung redirect ke login setelah 2 detik
     setTimeout(() => {
       navigate("/login");
     }, 2000);
