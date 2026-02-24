@@ -11,6 +11,7 @@ interface UpdateUserModalProps {
     data: {
       name: string;
       email: string;
+      phone_number: string;
       password?: string;
     }
   ) => void;
@@ -26,19 +27,23 @@ const UpdateUserModal = ({
   const [form, setForm] = useState(() => ({
     name: user?.name ?? "",
     email: user?.email ?? "",
+    phone_number: user?.phone_number ?? "",
     password: "",
   }));
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen || !user) return null;
 
   const handleChange = (
-    field: "name" | "email" | "password",
+    field: "name" | "email" | "password" | "phone_number",
     value: string
   ): void => {
     setForm((prev) => ({
       ...prev,
       [field]: value,
     }));
+    setError(null);
   };
 
   const FloatingInput = ({
@@ -124,13 +129,37 @@ const UpdateUserModal = ({
           />
 
           <FloatingInput
-            label="Password (opsional)"
-            type="password"
-            value={form.password}
+            label="Nomor Telepon"
+            type="tel"
+            value={form.phone_number}
             onChange={(v) =>
-              handleChange("password", v)
+              handleChange("phone_number", v)
             }
           />
+
+          <div className="relative">
+            <FloatingInput
+              label="Password Baru (opsional)"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(v) =>
+                handleChange("password", v)
+              }
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition"
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </button>
+          </div>
+
+          {error && (
+            <p className="text-xs text-red-500 animate-pulse">
+              {error}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
@@ -148,14 +177,19 @@ const UpdateUserModal = ({
 
           <button
             disabled={isLoading}
-            onClick={() =>
+            onClick={() => {
+              if (form.password && form.password.length < 8) {
+                setError("Password minimal 8 karakter");
+                return;
+              }
               onSubmit(user.id, {
                 name: form.name,
                 email: form.email,
+                phone_number: form.phone_number,
                 password:
                   form.password || undefined,
-              })
-            }
+              });
+            }}
             className="
               px-5 py-2 rounded-xl text-sm
               bg-gradient-to-r from-primary to-blue-600

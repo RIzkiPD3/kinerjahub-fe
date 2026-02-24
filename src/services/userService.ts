@@ -47,6 +47,7 @@ export interface UpdateUserPayload {
   name?: string;
   email?: string;
   password?: string;
+  phone_number?: string;
   department_id?: string;
   division_id?: string;
   role_id?: string;

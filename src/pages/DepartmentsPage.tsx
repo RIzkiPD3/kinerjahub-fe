@@ -1,46 +1,81 @@
-import { Building, Plus, Search, MoreVertical } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Building, Plus, Search, Trash2, Loader2, Edit2 } from "lucide-react";
+import { getDepartments, deleteDepartment } from "@/services/departementService";
+import type { Department } from "@/services/departementService";
+import DepartmentForm from "@/components/departments/DepartmentForm";
+import DeleteConfirmModal from "@/components/common/DeleteConfirmModal";
 
 const DepartmentsPage = () => {
-  const departments = [
-    {
-      id: 1,
-      name: "Human Resources",
-      head: "Dian Sastro",
-      members: 12,
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Information Technology",
-      head: "Budi Tabuti",
-      members: 45,
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Marketing",
-      head: "Siti Aminah",
-      members: 28,
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "Finance",
-      head: "Andi Wijaya",
-      members: 15,
-      status: "Active",
-    },
-    {
-      id: 5,
-      name: "Operations",
-      head: "Eko Prasetyo",
-      members: 32,
-      status: "Active",
-    },
-  ];
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDepartment, setEditingDepartment] = useState<Department | undefined>(undefined);
+
+  // Delete modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [departmentToDelete, setDepartmentToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const fetchDepartments = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getDepartments();
+      setDepartments(data);
+    } catch (err) {
+      console.error("Failed to fetch departments:", err);
+      setError("Gagal memuat data departemen.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const handleCreate = () => {
+    setEditingDepartment(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (dept: Department) => {
+    setEditingDepartment(dept);
+    setIsModalOpen(true);
+  };
+
+  const openDeleteModal = (id: string, name: string) => {
+    setDepartmentToDelete({ id, name });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!departmentToDelete) return;
+
+    setIsDeleting(departmentToDelete.id);
+    try {
+      await deleteDepartment(departmentToDelete.id);
+      setIsDeleteModalOpen(false);
+      fetchDepartments();
+    } catch (err) {
+      console.error("Failed to delete department:", err);
+      alert("Gagal menghapus departemen.");
+    } finally {
+      setIsDeleting(null);
+      setDepartmentToDelete(null);
+    }
+  };
+
+  const handleFormSuccess = () => {
+    setIsModalOpen(false);
+    fetchDepartments();
+  };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 relative min-h-screen">
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -51,7 +86,10 @@ const DepartmentsPage = () => {
             Kelola data departemen dan penanggung jawab masing-masing area.
           </p>
         </div>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2">
+        <button
+          onClick={handleCreate}
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+        >
           <Plus size={18} />
           Tambah Departemen
         </button>
@@ -80,67 +118,92 @@ const DepartmentsPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-secondary/50 border-b border-border">
-              <tr>
-                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Nama Departemen
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Kepala Departemen
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Jumlah Anggota
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
-                  Aksi
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {departments.map((dept) => (
-                <tr
-                  key={dept.id}
-                  className="hover:bg-secondary/30 transition-colors group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
-                        {dept.name[0]}
-                      </div>
-                      <span className="font-semibold text-foreground">
-                        {dept.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-foreground font-medium">
-                    {dept.head}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">
-                    {dept.members} Karyawan
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">
-                      {dept.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-lg">
-                      <MoreVertical size={18} />
-                    </button>
-                  </td>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <Loader2 className="text-primary animate-spin" size={40} />
+              <p className="text-muted-foreground text-sm font-medium">Memuat data...</p>
+            </div>
+          ) : error ? (
+            <div className="py-20 text-center">
+              <p className="text-destructive font-medium">{error}</p>
+              <button
+                onClick={fetchDepartments}
+                className="mt-4 text-primary hover:underline text-sm"
+              >
+                Coba lagi
+              </button>
+            </div>
+          ) : departments.length === 0 ? (
+            <div className="py-20 text-center">
+              <p className="text-muted-foreground">Belum ada data departemen.</p>
+            </div>
+          ) : (
+            <table className="w-full text-left">
+              <thead className="bg-secondary/50 border-b border-border">
+                <tr>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Nama Departemen
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Divisi ID
+                  </th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
+                    Aksi
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {departments.map((dept) => (
+                  <tr
+                    key={dept.id}
+                    className="hover:bg-secondary/30 transition-colors group"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold">
+                          {dept.name[0]}
+                        </div>
+                        <span className="font-semibold text-foreground">
+                          {dept.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground">
+                      {dept.division_id}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleEdit(dept)}
+                          className="text-muted-foreground hover:text-primary transition-colors p-2 hover:bg-primary/10 rounded-lg group/btn"
+                          title="Edit Departemen"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(dept.id, dept.name)}
+                          disabled={isDeleting === dept.id}
+                          className="text-muted-foreground hover:text-destructive transition-colors p-2 hover:bg-destructive/10 rounded-lg disabled:opacity-50"
+                          title="Hapus Departemen"
+                        >
+                          {isDeleting === dept.id ? (
+                            <Loader2 size={18} className="animate-spin" />
+                          ) : (
+                            <Trash2 size={18} />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="p-6 border-t border-border flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Menampilkan 5 dari 8 departemen
+            Menampilkan {departments.length} departemen
           </p>
           <div className="flex gap-2">
             <button
@@ -155,6 +218,33 @@ const DepartmentsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal Overlay */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          />
+          <div className="relative w-full max-w-lg animate-in zoom-in-95 duration-200">
+            <DepartmentForm
+              initialData={editingDepartment}
+              onSuccess={handleFormSuccess}
+              onCancel={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+      {/* Custom Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        title="Hapus Departemen"
+        description={`Apakah Anda yakin ingin menghapus departemen "${departmentToDelete?.name}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Hapus Departemen"
+        onConfirm={handleDelete}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        isLoading={!!isDeleting}
+      />
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import {
   Users,
   Plus,
-  Search,
   MoreVertical,
   Mail,
   GitBranch,
@@ -74,6 +73,7 @@ const UsersPage = () => {
     data: {
       name: string;
       email: string;
+      phone_number: string;
       password?: string;
     }
   ): Promise<void> => {
@@ -90,8 +90,7 @@ const UsersPage = () => {
           u.id === id
             ? {
               ...u,
-              name: updated.name,
-              email: updated.email,
+              ...updated,
             }
             : u
         )
@@ -100,6 +99,7 @@ const UsersPage = () => {
       setUpdateTarget(null);
     } catch (error) {
       console.error("Update failed", error);
+      alert("Gagal mengupdate user. Pastikan format benar.");
     } finally {
       setIsUpdating(false);
     }
@@ -136,7 +136,7 @@ const UsersPage = () => {
             Kelola akses pengguna, peran, dan informasi profil karyawan.
           </p>
         </div>
-        <button 
+        <button
           onClick={() => setIsAddModalOpen(true)}
           className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
         >
@@ -218,7 +218,7 @@ const UsersPage = () => {
                 </p>
 
                 <div className="mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
-                  {user.department?.name ?? "No Dept"} 
+                  {user.department?.name ?? "No Dept"}
                 </div>
               </div>
             </div>
@@ -239,7 +239,10 @@ const UsersPage = () => {
 
 
         {/* Add shortcut card */}
-        <button className="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20 p-6 flex flex-col items-center justify-center gap-4 hover:bg-primary/10 transition-all group">
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20 p-6 flex flex-col items-center justify-center gap-4 hover:bg-primary/10 transition-all group"
+        >
           <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
             <Plus size={24} />
           </div>
@@ -250,26 +253,6 @@ const UsersPage = () => {
         </button>
       </div>
 
-      {/* Quick Search */}
-      <div className="bg-white p-4 rounded-xl border border-border flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Search className="text-muted-foreground" size={20} />
-          <input
-            type="text"
-            placeholder="Cari user berdasarkan nama, email, atau departemen..."
-            className="bg-transparent border-none outline-none text-sm w-96 text-foreground"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            Ketik{" "}
-            <kbd className="px-2 py-1 bg-secondary rounded border border-border font-sans font-bold">
-              CMD + F
-            </kbd>{" "}
-            untuk cari cepat
-          </span>
-        </div>
-      </div>
       <DeleteUserModal
         isOpen={!!deleteTargetId}
         isLoading={isDeleting}

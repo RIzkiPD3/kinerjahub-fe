@@ -1,53 +1,81 @@
-import { Briefcase, Plus, Search, MoreVertical, Filter } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Briefcase, Plus, Search, Trash2, Filter, Loader2, Edit2 } from "lucide-react";
+import { getDivisions, deleteDivision } from "@/services/divisonService";
+import type { Division } from "@/services/divisonService";
+import DivisionForm from "@/components/divisions/DivisionForm";
+import DeleteConfirmModal from "@/components/common/DeleteConfirmModal";
 
 const DivisionsPage = () => {
-  const divisions = [
-    {
-      id: 1,
-      name: "Web Development",
-      dept: "Information Technology",
-      lead: "Rizky",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Mobile App",
-      dept: "Information Technology",
-      lead: "Fahmi",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Recruitment",
-      dept: "Human Resources",
-      lead: "Sarah",
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "Content Creator",
-      dept: "Marketing",
-      lead: "Jessica",
-      status: "Active",
-    },
-    {
-      id: 5,
-      name: "Payroll",
-      dept: "Finance",
-      lead: "Hendra",
-      status: "Active",
-    },
-    {
-      id: 6,
-      name: "UI/UX Design",
-      dept: "Information Technology",
-      lead: "Anisa",
-      status: "Active",
-    },
-  ];
+  const [divisions, setDivisions] = useState<Division[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDivision, setEditingDivision] = useState<Division | undefined>(undefined);
+
+  // Delete modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [divisionToDelete, setDivisionToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const fetchDivisions = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getDivisions();
+      setDivisions(data);
+    } catch (err) {
+      console.error("Failed to fetch divisions:", err);
+      setError("Gagal memuat data divisi.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDivisions();
+  }, []);
+
+  const handleCreate = () => {
+    setEditingDivision(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (div: Division) => {
+    setEditingDivision(div);
+    setIsModalOpen(true);
+  };
+
+  const openDeleteModal = (id: string, name: string) => {
+    setDivisionToDelete({ id, name });
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!divisionToDelete) return;
+
+    setIsDeleting(divisionToDelete.id);
+    try {
+      await deleteDivision(divisionToDelete.id);
+      setIsDeleteModalOpen(false);
+      fetchDivisions();
+    } catch (err) {
+      console.error("Failed to delete division:", err);
+      alert("Gagal menghapus divisi.");
+    } finally {
+      setIsDeleting(null);
+      setDivisionToDelete(null);
+    }
+  };
+
+  const handleFormSuccess = () => {
+    setIsModalOpen(false);
+    fetchDivisions();
+  };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 relative min-h-screen">
       <div className="flex items-end justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -58,7 +86,10 @@ const DivisionsPage = () => {
             Kelola sub-unit atau divisi di bawah setiap departemen.
           </p>
         </div>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2">
+        <button
+          onClick={handleCreate}
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+        >
           <Plus size={18} />
           Tambah Divisi
         </button>
@@ -91,50 +122,108 @@ const DivisionsPage = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-          {divisions.map((div) => (
-            <div
-              key={div.id}
-              className="p-6 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all group relative"
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="text-primary animate-spin" size={40} />
+            <p className="text-muted-foreground text-sm font-medium">Memuat data...</p>
+          </div>
+        ) : error ? (
+          <div className="py-20 text-center">
+            <p className="text-destructive font-medium">{error}</p>
+            <button
+              onClick={fetchDivisions}
+              className="mt-4 text-primary hover:underline text-sm"
             >
-              <button className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
-                <MoreVertical size={18} />
-              </button>
-
-              <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary mb-4 group-hover:bg-primary transition-colors group-hover:text-white">
-                <Briefcase size={24} />
-              </div>
-
-              <h4 className="text-lg font-bold text-foreground mb-1">
-                {div.name}
-              </h4>
-              <p className="text-sm text-primary font-medium mb-4">
-                {div.dept}
-              </p>
-
-              <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-1">
-                    Lead
-                  </p>
-                  <p className="text-sm font-bold text-foreground">
-                    {div.lead}
-                  </p>
+              Coba lagi
+            </button>
+          </div>
+        ) : divisions.length === 0 ? (
+          <div className="py-20 text-center">
+            <p className="text-muted-foreground">Belum ada data divisi.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            {divisions.map((div) => (
+              <div
+                key={div.id}
+                className="p-6 rounded-xl border border-border hover:border-primary/30 hover:shadow-md transition-all group relative"
+              >
+                <div className="absolute top-4 right-4 flex gap-1">
+                  <button
+                    onClick={() => handleEdit(div)}
+                    className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                    title="Edit Divisi"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                  <button
+                    onClick={() => openDeleteModal(div.id, div.name)}
+                    disabled={isDeleting === div.id}
+                    className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors disabled:opacity-50"
+                    title="Hapus Divisi"
+                  >
+                    {isDeleting === div.id ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Trash2 size={16} />
+                    )}
+                  </button>
                 </div>
-                <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">
-                  {div.status}
-                </span>
+
+                <div className="w-12 h-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary mb-4 group-hover:bg-primary transition-colors group-hover:text-white">
+                  <Briefcase size={24} />
+                </div>
+
+                <h4 className="text-lg font-bold text-foreground mb-1">
+                  {div.name}
+                </h4>
+                <p className="text-xs text-muted-foreground font-mono truncate">
+                  {div.id}
+                </p>
+
+                <div className="flex items-center justify-between pt-4 mt-4 border-t border-border">
+                  <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded-full uppercase">
+                    Active
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="p-6 border-t border-border flex items-center justify-center">
-          <button className="text-sm font-bold text-primary hover:underline">
-            Lihat Lebih Banyak Divisi
-          </button>
+          <p className="text-sm text-muted-foreground">
+            Menampilkan {divisions.length} divisi
+          </p>
         </div>
       </div>
+
+      {/* Modal Overlay */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          />
+          <div className="relative w-full max-w-lg animate-in zoom-in-95 duration-200">
+            <DivisionForm
+              initialData={editingDivision}
+              onSuccess={handleFormSuccess}
+              onCancel={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
+      {/* Custom Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        title="Hapus Divisi"
+        description={`Apakah Anda yakin ingin menghapus divisi "${divisionToDelete?.name}"? Tindakan ini tidak dapat dibatalkan.`}
+        confirmLabel="Hapus Divisi"
+        onConfirm={handleDelete}
+        onCancel={() => setIsDeleteModalOpen(false)}
+        isLoading={!!isDeleting}
+      />
     </div>
   );
 };

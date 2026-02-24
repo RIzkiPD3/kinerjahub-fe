@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { X, Plus } from "lucide-react";
 import { createUser, type CreateUserPayload } from "@/services/userService";
-import { getDepartments } from "@/services/departementService";
-import { getDivisionsByDepartment } from "@/services/divisonService";
+import { getDepartmentsByDivision } from "@/services/departementService";
+import { getDivisions } from "@/services/divisonService";
 import { getRoles, createRole, type Role } from "@/services/roleService";
 
 interface Props {
@@ -32,12 +32,12 @@ export default function AddUserModal({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [departmentId, setDepartmentId] = useState("");
   const [divisionId, setDivisionId] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
   const [roleId, setRoleId] = useState("");
 
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -46,24 +46,24 @@ export default function AddUserModal({
 
   useEffect(() => {
     if (open) {
-      getDepartments().then(setDepartments);
+      getDivisions().then(setDivisions);
       getRoles().then(setRoles);
     }
   }, [open]);
 
   useEffect(() => {
-    if (!departmentId) {
-      setDivisions([]);
+    if (!divisionId) {
+      setDepartments([]);
       return;
     }
 
-    const fetchDivisions = async () => {
-      const data = await getDivisionsByDepartment(departmentId);
-      setDivisions(data);
+    const fetchDepartments = async () => {
+      const data = await getDepartmentsByDivision(divisionId);
+      setDepartments(data);
     };
 
-    fetchDivisions();
-  }, [departmentId]);
+    fetchDepartments();
+  }, [divisionId]);
 
   const handleCreateRole = async () => {
     if (!newRoleName.trim()) return;
@@ -120,8 +120,8 @@ export default function AddUserModal({
     setEmail("");
     setPassword("");
     setPhone("");
-    setDepartmentId("");
     setDivisionId("");
+    setDepartmentId("");
     setRoleId("");
     setNewRoleName("");
     setShowCreateRole(false);
@@ -205,22 +205,22 @@ export default function AddUserModal({
             />
           </div>
 
-          {/* Department */}
+          {/* Division */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Departemen
+              Divisi
             </label>
             <select
-              title="Pilih Departemen"
-              value={departmentId}
+              title="Pilih Divisi"
+              value={divisionId}
               onChange={(e) => {
-                setDepartmentId(e.target.value);
-                setDivisionId("");
+                setDivisionId(e.target.value);
+                setDepartmentId("");
               }}
               className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
             >
-              <option value="">Pilih Departemen</option>
-              {departments.map((d) => (
+              <option value="">Pilih Divisi</option>
+              {divisions.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>
@@ -228,20 +228,20 @@ export default function AddUserModal({
             </select>
           </div>
 
-          {/* Division */}
-          {departmentId && (
+          {/* Department */}
+          {divisionId && (
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Divisi
+                Departemen
               </label>
               <select
-                title="Pilih Divisi"
-                value={divisionId}
-                onChange={(e) => setDivisionId(e.target.value)}
+                title="Pilih Departemen"
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
                 className="w-full px-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
               >
-                <option value="">Pilih Divisi</option>
-                {divisions.map((d) => (
+                <option value="">Pilih Departemen</option>
+                {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
                   </option>
