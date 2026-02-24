@@ -23,3 +23,19 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #6b7280;
 }
+
+.input-3d {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: inset 2px 2px 4px #e5e7eb,
+              inset -2px -2px 4px #ffffff;
+  transition: 0.2s ease;
+}
+
+.input-3d:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}

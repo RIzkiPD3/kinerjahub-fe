@@ -66,6 +66,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Login failed:", error);
       throw error;
     }
+    const response = await api.post("/auth/login", credentials);
+    const { token, user: userData } = response.data.data;
+    localStorage.setItem("token", token);
+    setIsAuthenticated(true);
+    setUser(userData);
+    console.log("Login successful:", userData);
+    console.log("Token stored in localStorage:", token);
   };
 
   const register = async (data: RegisterData) => {
