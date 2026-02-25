@@ -52,4 +52,14 @@ export const divisionService = {
   async delete(id: string): Promise<void> {
     await api.delete(`/divisions/${id}`);
   },
+  department_id: string;
+}
+
+export const getDivisionsByDepartment = async (
+  departmentId: string
+): Promise<Division[]> => {
+  const response = await api.get(
+    `/divisions?department_id=${departmentId}`
+  );
+  return response.data;
 };

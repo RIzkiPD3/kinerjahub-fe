@@ -5,7 +5,6 @@ import {
   Settings,
   LogOut,
   Bell,
-  Search,
   LayoutDashboard,
   ChevronRight,
 } from "lucide-react";
@@ -70,11 +69,10 @@ const DashboardLayout = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  active
-                    ? "bg-white/20"
-                    : "hover:bg-white/5 text-white/70 hover:text-white"
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${active
+                  ? "bg-white/20"
+                  : "hover:bg-white/5 text-white/70 hover:text-white"
+                  }`}
               >
                 {item.icon}
                 <span className="font-medium">{item.label}</span>
@@ -102,19 +100,7 @@ const DashboardLayout = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Topbar */}
-        <header className="h-16 bg-white border-b border-border flex items-center justify-between px-8 z-10">
-          <div className="relative w-96">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Cari karyawan, departemen, atau laporan..."
-              className="w-full pl-10 pr-4 py-2 bg-secondary rounded-full border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
-            />
-          </div>
-
+        <header className="h-16 bg-white border-b border-border flex items-center justify-end px-8 z-10">
           <div className="flex items-center gap-6">
             <button className="relative text-muted-foreground hover:text-primary transition-colors">
               <Bell size={20} />

@@ -16,6 +16,7 @@ function App() {
     <div className="min-h-screen bg-background text-foreground">
       <ToastContainer />
       <Routes>
+        {/* Public Routes */}
         <Route
           path="/"
           element={
@@ -25,6 +26,10 @@ function App() {
             </>
           }
         />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
@@ -38,8 +43,6 @@ function App() {
           <Route path="divisions" element={<DivisionsPage />} />
           <Route path="users" element={<UsersPage />} />
         </Route>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
       </Routes>
     </div>
   );

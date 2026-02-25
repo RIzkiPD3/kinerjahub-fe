@@ -4,53 +4,125 @@ import {
   Search,
   MoreVertical,
   Mail,
-  Phone,
-  MapPin,
+  GitBranch,
 } from "lucide-react";
+import { useState, useEffect, } from "react";
+import { getUsers, deleteUser, updateUser, type User } from "@/services/userService";
+import DeleteUserModal from "@/components/users/DeleteUserModal";
+import UpdateUserModal from "@/components/users/UpdateUserModal";
+import AddUserModal from "@/components/users/AddUserModal";
 
 const UsersPage = () => {
-  const users = [
-    {
-      id: 1,
-      name: "Budi Santoso",
-      email: "budi@kinerjahub.com",
-      role: "Manager",
-      dept: "Information Technology",
-      avatar: "B",
-    },
-    {
-      id: 2,
-      name: "Siti Aminah",
-      email: "siti@kinerjahub.com",
-      role: "Supervisor",
-      dept: "Human Resources",
-      avatar: "S",
-    },
-    {
-      id: 3,
-      name: "Andi Wijaya",
-      email: "andi@kinerjahub.com",
-      role: "Staff",
-      dept: "Marketing",
-      avatar: "A",
-    },
-    {
-      id: 4,
-      name: "Jessica Low",
-      email: "jessica@kinerjahub.com",
-      role: "Staff",
-      dept: "Information Technology",
-      avatar: "J",
-    },
-    {
-      id: 5,
-      name: "Rizky Pratama",
-      email: "rizky@kinerjahub.com",
-      role: "Admin",
-      dept: "Operations",
-      avatar: "R",
-    },
-  ];
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const [updateTarget, setUpdateTarget] = useState<User | null>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+
+  const fetchUsers = async (): Promise<void> => {
+    try {
+      setLoading(true);
+      const data = await getUsers();
+      setUsers(data);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setError("Gagal mengambil data user");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActiveMenuId(null);
+    };
+
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
+
+
+  const handleDelete = async (): Promise<void> => {
+    if (!deleteTargetId) return;
+
+    try {
+      setIsDeleting(true);
+
+      await deleteUser(deleteTargetId);
+
+      setUsers((prev) =>
+        prev.filter((user) => user.id !== deleteTargetId)
+      );
+
+      setDeleteTargetId(null);
+    } catch (error) {
+      console.error("Delete failed", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpdate = async (
+    id: string,
+    data: {
+      name: string;
+      email: string;
+      password?: string;
+    }
+  ): Promise<void> => {
+    try {
+      setIsUpdating(true);
+
+      const updated = await updateUser(
+        id,
+        data
+      );
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === id
+            ? {
+              ...u,
+              name: updated.name,
+              email: updated.email,
+            }
+            : u
+        )
+      );
+
+      setUpdateTarget(null);
+    } catch (error) {
+      console.error("Update failed", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Loading users...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-8 text-center text-red-500">
+        {error}
+      </div>
+    );
+  }
+
 
   return (
     <div className="p-8 space-y-8">
@@ -64,7 +136,10 @@ const UsersPage = () => {
             Kelola akses pengguna, peran, dan informasi profil karyawan.
           </p>
         </div>
-        <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2">
+        <button 
+          onClick={() => setIsAddModalOpen(true)}
+          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+        >
           <Plus size={18} />
           Tambah User
         </button>
@@ -74,52 +149,94 @@ const UsersPage = () => {
         {users.map((user) => (
           <div
             key={user.id}
-            className="bg-white rounded-2xl shadow-sm border border-border p-6 hover:shadow-md transition-shadow relative group"
+            className="bg-white rounded-2xl shadow-sm border border-border p-6 relative"
           >
-            <button className="absolute top-4 right-4 text-muted-foreground hover:text-foreground">
-              <MoreVertical size={18} />
-            </button>
+            <div className="absolute top-4 right-4">
+              <button
+                title="Menu"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveMenuId(
+                    activeMenuId === user.id ? null : user.id
+                  );
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <MoreVertical size={18} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {activeMenuId === user.id && (
+                <div
+                  onClick={(e) =>
+                    e.stopPropagation()
+                  }
+                  className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-md z-20"
+                >
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    onClick={() => {
+                      setUpdateTarget(user);
+                      console.log(
+                        "Edit user",
+                        user.id
+                      );
+                      setActiveMenuId(null);
+                    }}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                    onClick={() => {
+                      setDeleteTargetId(
+                        user.id
+                      );
+                      setActiveMenuId(null);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+
 
             <div className="flex items-start gap-4 mb-6">
               <div className="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-2xl font-bold shadow-lg">
-                {user.avatar}
+                {user.name.charAt(0).toUpperCase()}
               </div>
+
               <div className="flex-1">
                 <h4 className="text-lg font-bold text-foreground">
                   {user.name}
                 </h4>
-                <p className="text-sm text-primary font-medium">{user.role}</p>
-                <div className="flex items-center gap-2 mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
-                  {user.dept}
+
+                <p className="text-sm text-primary font-medium">
+                  {user.role?.name ?? "No Role"}
+                </p>
+
+                <div className="mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
+                  {user.department?.name ?? "No Dept"} 
                 </div>
               </div>
             </div>
 
             <div className="space-y-3 pt-4 border-t border-border">
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Mail size={16} className="text-primary/60" />
+                <Mail size={16} />
                 {user.email}
               </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <Phone size={16} className="text-primary/60" />
-                +62 812-3456-7890
-              </div>
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                <MapPin size={16} className="text-primary/60" />
-                Jakarta, Indonesia
-              </div>
-            </div>
 
-            <div className="mt-6 flex gap-2">
-              <button className="flex-1 py-2 bg-secondary hover:bg-border rounded-lg text-xs font-bold transition-colors text-foreground">
-                Profil Lengkap
-              </button>
-              <button className="flex-1 py-2 border border-primary/20 text-primary hover:bg-primary/5 rounded-lg text-xs font-bold transition-colors">
-                Kirim Pesan
-              </button>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                <GitBranch size={16} />
+                {user.division?.name ?? "-"}
+              </div>
             </div>
           </div>
         ))}
+
 
         {/* Add shortcut card */}
         <button className="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20 p-6 flex flex-col items-center justify-center gap-4 hover:bg-primary/10 transition-all group">
@@ -153,6 +270,29 @@ const UsersPage = () => {
           </span>
         </div>
       </div>
+      <DeleteUserModal
+        isOpen={!!deleteTargetId}
+        isLoading={isDeleting}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+      />
+      <UpdateUserModal
+        key={updateTarget?.id}
+        isOpen={updateTarget !== null}
+        user={updateTarget}
+        isLoading={isUpdating}
+        onClose={() => setUpdateTarget(null)}
+        onSubmit={handleUpdate}
+      />
+      <AddUserModal
+        open={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          setIsAddModalOpen(false);
+          fetchUsers();
+        }}
+        organizationId="default-org"
+      />
     </div>
   );
 };
