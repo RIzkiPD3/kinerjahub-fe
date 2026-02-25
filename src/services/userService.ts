@@ -52,35 +52,43 @@ export interface UpdateUserPayload {
   role_id?: string;
 }
 
+export const userService = {
+  // Get all users
+  async getAll(): Promise<User[]> {
+    const response = await api.get("/users");
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data.data || [];
+  },
 
-export const getUsers = async (): Promise<User[]> => {
-  const { data } = await api.get<User[]>("/users");
-  return data;
+  // Get single user
+  async getById(id: string): Promise<User> {
+    const response = await api.get(`/users/${id}`);
+    return response.data.data || response.data;
+  },
+
+  // Create user
+  async create(payload: CreateUserPayload): Promise<User> {
+    const response = await api.post("/users", payload);
+    return response.data.data || response.data;
+  },
+
+  // Update user
+  async update(id: string, payload: UpdateUserPayload): Promise<User> {
+    const response = await api.put(`/users/${id}`, payload);
+    return response.data.data || response.data;
+  },
+
+  // Delete user
+  async delete(id: string): Promise<{ message: string }> {
+    const response = await api.delete(`/users/${id}`);
+    return response.data.data || response.data;
+  },
 };
 
-export const getUserDetail = async (id: string): Promise<User> => {
-  const { data } = await api.get<User>(`/users/${id}`);
-  return data;
-};
-
-export const createUser = async (
-  payload: CreateUserPayload
-): Promise<User> => {
-  const response = await api.post("/users", payload);
-  return response.data.data;
-};
-
-export const updateUser = async (
-  id: string,
-  payload: UpdateUserPayload
-): Promise<User> => {
-  const { data } = await api.put<User>(`/users/${id}`, payload);
-  return data;
-};
-
-export const deleteUser = async (
-  id: string
-): Promise<{ message: string }> => {
-  const { data } = await api.delete<{ message: string }>(`/users/${id}`);
-  return data;
-};
+// Backward compatibility exports
+export const getUsers = userService.getAll;
+export const getUserDetail = userService.getById;
+export const createUser = userService.create;
+export const updateUser = userService.update;
+export const deleteUser = userService.delete;

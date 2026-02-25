@@ -29,6 +29,7 @@ interface ApiError {
 
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
+
   const [filteredDepartments, setFilteredDepartments] = useState<Department[]>(
     [],
   );
@@ -39,6 +40,35 @@ const DepartmentsPage = () => {
   const [selectedDepartment, setSelectedDepartment] =
     useState<Department | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  // Filter departments
+  useEffect(() => {
+    let filtered = departments;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (dept) =>
+          dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          dept.head.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (dept.head_email?.toLowerCase() || "").includes(
+            searchTerm.toLowerCase(),
+          ) ||
+          (dept.description?.toLowerCase() || "").includes(
+            searchTerm.toLowerCase(),
+          ),
+      );
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((dept) => dept.status === statusFilter);
+    }
+
+    setFilteredDepartments(filtered);
+  }, [searchTerm, statusFilter, departments]);
 
   const fetchDepartments = async () => {
     setIsLoading(true);
