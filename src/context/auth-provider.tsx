@@ -58,6 +58,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log("Login success:", {
           userId: userData.id,
           email: userData.email,
+          organization_id:
+            userData.organization_id || userData.organization?.id,
         });
       } else {
         throw new Error("Token atau user data tidak ditemukan dalam response");
