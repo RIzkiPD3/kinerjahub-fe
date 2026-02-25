@@ -30,14 +30,14 @@ const DashboardLayout = () => {
       exact: true,
     },
     {
-      path: "/dashboard/departments",
-      icon: <Building size={20} />,
-      label: "Department",
-    },
-    {
       path: "/dashboard/divisions",
       icon: <Briefcase size={20} />,
       label: "Division",
+    },
+    {
+      path: "/dashboard/departments",
+      icon: <Building size={20} />,
+      label: "Department",
     },
     {
       path: "/dashboard/users",

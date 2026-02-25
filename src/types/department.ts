@@ -1,21 +1,24 @@
 export interface Department {
   id: string;
   name: string;
-  head: string;
-  head_email?: string;
-  members: number;
-  status: "active" | "inactive";
-  description?: string;
+  division_id: string;
+  head?: string;
+  organization?: {
+    id: string;
+    name: string;
+  };
+  division?: {
+    id: string;
+    name: string;
+  };
   created_at?: string;
   updated_at?: string;
 }
 
 export interface CreateDepartmentDto {
   name: string;
-  head: string;
-  head_email?: string;
-  description?: string;
-  status?: "active" | "inactive";
+  division_id: string;
+  head?: string;
 }
 
 export type UpdateDepartmentDto = Partial<CreateDepartmentDto>;

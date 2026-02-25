@@ -7,6 +7,8 @@ import {
   Edit,
   Trash2,
   RefreshCw,
+  LayoutGrid,
+  UserCircle,
 } from "lucide-react";
 import { departmentsService } from "@/services/departments";
 import type { Department, CreateDepartmentDto } from "@/types/department";
@@ -33,7 +35,6 @@ const DepartmentsPage = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] =
@@ -87,6 +88,27 @@ const DepartmentsPage = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  // Filter departments
+  useEffect(() => {
+    let filtered = departments;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (dept) =>
+          dept.name.toLowerCase().includes(term) ||
+          (dept.division?.name || "").toLowerCase().includes(term) ||
+          (dept.head || "").toLowerCase().includes(term),
+      );
+    }
+
+    setFilteredDepartments(filtered);
+  }, [searchTerm, departments]);
 
   const handleCreate = async (data: CreateDepartmentDto) => {
     try {
@@ -164,11 +186,6 @@ const DepartmentsPage = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const activeCount = departments.filter((d) => d.status === "active").length;
-  const inactiveCount = departments.filter(
-    (d) => d.status === "inactive",
-  ).length;
-
   return (
     <div className="p-8 space-y-8">
       {/* Header */}
@@ -179,7 +196,7 @@ const DepartmentsPage = () => {
             Manajemen Departemen
           </h2>
           <p className="text-muted-foreground">
-            Kelola data departemen dan penanggung jawab masing-masing area.
+            Kelola data departemen di bawah divisi masing-masing.
           </p>
         </div>
         <div className="flex gap-3">
@@ -203,14 +220,6 @@ const DepartmentsPage = () => {
 
       {/* Stats Summary */}
       <div className="flex items-center gap-4 text-sm">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-full border border-green-200">
-          <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-          <span className="font-medium">Active: {activeCount}</span>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full border border-gray-200">
-          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-          <span className="font-medium">Inactive: {inactiveCount}</span>
-        </div>
         <div className="text-muted-foreground">
           Total: {departments.length} departemen
         </div>
@@ -226,31 +235,11 @@ const DepartmentsPage = () => {
             />
             <input
               type="text"
-              placeholder="Cari departemen, kepala departemen, atau email..."
+              placeholder="Cari departemen atau divisi..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
             />
-          </div>
-          <div className="flex items-center gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
-            >
-              <option value="all" className="bg-background">
-                Semua Status
-              </option>
-              <option
-                value="active"
-                className="bg-background text-green-600 font-semibold"
-              >
-                Active
-              </option>
-              <option value="inactive" className="bg-background text-gray-500">
-                Inactive
-              </option>
-            </select>
           </div>
         </div>
 
@@ -267,16 +256,13 @@ const DepartmentsPage = () => {
               Tidak ada data
             </h3>
             <p className="text-muted-foreground">
-              {searchTerm || statusFilter !== "all"
+              {searchTerm
                 ? "Tidak ada departemen yang sesuai dengan filter"
                 : "Belum ada departemen yang ditambahkan"}
             </p>
-            {(searchTerm || statusFilter !== "all") && (
+            {searchTerm && (
               <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("all");
-                }}
+                onClick={() => setSearchTerm("")}
                 className="mt-4 text-primary hover:underline text-sm font-medium"
               >
                 Reset filter
@@ -294,13 +280,10 @@ const DepartmentsPage = () => {
                       Nama Departemen
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      Divisi (Parent)
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                       Kepala Departemen
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      Jumlah Anggota
-                    </th>
-                    <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      Status
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
                       Aksi
@@ -322,45 +305,26 @@ const DepartmentsPage = () => {
                             <span className="font-semibold text-foreground block">
                               {dept.name}
                             </span>
-                            {dept.description && (
-                              <span className="text-xs text-muted-foreground line-clamp-1">
-                                {dept.description}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">
-                            {dept.head}
-                          </p>
-                          {dept.head_email && (
-                            <p className="text-xs text-primary/70 mt-0.5">
-                              {dept.head_email}
-                            </p>
-                          )}
+                        <div className="flex items-center gap-2 text-sm text-foreground">
+                          <LayoutGrid
+                            size={16}
+                            className="text-muted-foreground"
+                          />
+                          {dept.division?.name || "Tanpa Divisi"}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-foreground">
-                          {dept.members}{" "}
-                          {dept.members > 1 ? "Karyawan" : "Karyawan"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1.5 text-xs font-bold rounded-full inline-flex items-center gap-1.5 ${
-                            dept.status === "active"
-                              ? "bg-green-100 text-green-800 border border-green-200 shadow-sm"
-                              : "bg-gray-100 text-gray-700 border border-gray-200"
-                          }`}
-                        >
-                          <span
-                            className={`w-2 h-2 rounded-full ${dept.status === "active" ? "bg-green-500 animate-pulse" : "bg-gray-500"}`}
+                        <div className="flex items-center gap-2 text-sm text-foreground">
+                          <UserCircle
+                            size={16}
+                            className="text-muted-foreground"
                           />
-                          {dept.status === "active" ? "Active" : "Inactive"}
-                        </span>
+                          {dept.head || "Belum ditentukan"}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-right relative">
                         <div className="relative">

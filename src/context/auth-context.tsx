@@ -4,6 +4,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  organization_id?: string;
 };
 
 export type LoginCredentials = {

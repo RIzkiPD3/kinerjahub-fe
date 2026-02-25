@@ -20,7 +20,7 @@ export const departmentsService = {
     return response.data.data || response.data;
   },
 
-  // Create department - perbaiki format data
+  // Create department
   async create(data: CreateDepartmentDto): Promise<Department> {
     console.log("Creating department with data:", data);
 
@@ -43,6 +43,8 @@ export const departmentsService = {
       console.error("Error in create department:", error);
       throw error;
     }
+    const response = await api.post("/departments", data);
+    return response.data.data || response.data;
   },
 
   // Update department
@@ -58,12 +60,12 @@ export const departmentsService = {
     };
 
     const response = await api.put(`/departments/${id}`, payload);
+    const response = await api.put(`/departments/${id}`, data);
     return response.data.data || response.data;
   },
 
   // Delete department
   async delete(id: string): Promise<void> {
-    console.log("Deleting department:", id);
     await api.delete(`/departments/${id}`);
   },
 };
