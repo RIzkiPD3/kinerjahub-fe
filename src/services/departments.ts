@@ -9,13 +9,15 @@ export const departmentsService = {
   // Get all departments
   async getAll(): Promise<Department[]> {
     const response = await api.get("/departments");
-    return response.data;
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data.data || [];
   },
 
   // Get single department
   async getById(id: string): Promise<Department> {
     const response = await api.get(`/departments/${id}`);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Create department - perbaiki format data
@@ -36,7 +38,7 @@ export const departmentsService = {
     try {
       const response = await api.post("/departments", payload);
       console.log("Create response:", response.data);
-      return response.data;
+      return response.data.data || response.data;
     } catch (error) {
       console.error("Error in create department:", error);
       throw error;
@@ -56,7 +58,7 @@ export const departmentsService = {
     };
 
     const response = await api.put(`/departments/${id}`, payload);
-    return response.data;
+    return response.data.data || response.data;
   },
 
   // Delete department

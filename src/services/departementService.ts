@@ -1,12 +1,6 @@
-import api from "@/lib/api";
+import { departmentsService } from "./departments";
+import type { Department } from "@/types/department";
 
-export interface Department {
-  id: string;
-  name: string;
-}
+export type { Department };
 
-export const getDepartments = async (): Promise<Department[]> => {
-  const response = await api.get("/departments");
-  return response.data;
-};
-
+export const getDepartments = departmentsService.getAll;

@@ -8,6 +8,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import DepartmentsPage from "./pages/DepartmentsPage";
 import DivisionsPage from "./pages/DivisionsPage";
 import UsersPage from "./pages/UsersPage";
+import TasksPage from "./pages/TasksPage";
 import { ToastContainer } from "./components/ui/Toast";
 import ProtectedRoute from "./components/auth/protected-route";
 
@@ -42,6 +43,7 @@ function App() {
           <Route path="departments" element={<DepartmentsPage />} />
           <Route path="divisions" element={<DivisionsPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="tasks" element={<TasksPage />} />
         </Route>
       </Routes>
     </div>
