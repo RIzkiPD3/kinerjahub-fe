@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { X, LayoutGrid, Info, UserCircle } from "lucide-react";
-import { divisionService, type Division } from "@/services/divisonService";
-import type { Department } from "@/types/department";
+import { X, LayoutGrid, UserCircle } from "lucide-react";
+import type { Division } from "@/services/divisonService";
 import axios from "axios";
 
 interface DivisionModalProps {
@@ -10,12 +9,10 @@ interface DivisionModalProps {
   onSubmit: (data: {
     name: string;
     organization_id: string;
-    department_id: string;
     head?: string;
     description?: string;
   }) => Promise<void>;
   division?: Division | null;
-  departments: Department[];
   organizationId: string;
   title: string;
 }
@@ -25,13 +22,11 @@ const DivisionModal = ({
   onClose,
   onSubmit,
   division,
-  departments,
   organizationId,
   title,
 }: DivisionModalProps) => {
   const [formData, setFormData] = useState({
     name: "",
-    department_id: "",
     head: "",
     description: "",
   });
@@ -42,14 +37,12 @@ const DivisionModal = ({
     if (division) {
       setFormData({
         name: division.name,
-        department_id: division.department_id,
         head: division.head || "",
         description: division.description || "",
       });
     } else {
       setFormData({
         name: "",
-        department_id: "",
         head: "",
         description: "",
       });
@@ -66,11 +59,6 @@ const DivisionModal = ({
       return;
     }
 
-    if (!formData.department_id) {
-      setError("Departemen harus dipilih");
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
@@ -78,7 +66,6 @@ const DivisionModal = ({
       await onSubmit({
         name: formData.name.trim(),
         organization_id: organizationId,
-        department_id: formData.department_id,
         head: formData.head.trim() || undefined,
         description: formData.description.trim() || undefined,
       });
@@ -155,28 +142,6 @@ const DivisionModal = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Departemen *
-              </label>
-              <div className="relative">
-                <Info className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                <select
-                  name="department_id"
-                  value={formData.department_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, department_id: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground"
-                  required
-                >
-                  <option value="">Pilih Departemen</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
@@ -200,7 +165,7 @@ const DivisionModal = ({
                 Deskripsi
               </label>
               <div className="relative">
-                <Info className="absolute left-3 top-3 text-muted-foreground w-5 h-5" />
+                <LayoutGrid className="absolute left-3 top-3 text-muted-foreground w-5 h-5" />
                 <textarea
                   name="description"
                   value={formData.description}

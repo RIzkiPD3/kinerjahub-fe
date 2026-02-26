@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Briefcase,
   Plus,
   Search,
   MoreVertical,
@@ -11,8 +10,6 @@ import {
   UserCircle,
 } from "lucide-react";
 import { divisionService, type Division } from "@/services/divisonService";
-import { departmentsService } from "@/services/departments";
-import type { Department } from "@/types/department";
 import DivisionModal from "@/components/divisions/DivisionModal";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "@/lib/toast";
@@ -21,11 +18,9 @@ import axios from "axios";
 const DivisionsPage = () => {
   const { user } = useAuth();
   const [divisions, setDivisions] = useState<Division[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
   const [filteredDivisions, setFilteredDivisions] = useState<Division[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
@@ -33,12 +28,8 @@ const DivisionsPage = () => {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [divData, deptData] = await Promise.all([
-        divisionService.getAll(),
-        departmentsService.getAll(),
-      ]);
+      const divData = await divisionService.getAll();
       setDivisions(divData);
-      setDepartments(deptData);
       setFilteredDivisions(divData);
     } catch (error) {
       console.error("Error fetching division data:", error);
@@ -54,26 +45,18 @@ const DivisionsPage = () => {
 
   useEffect(() => {
     const filtered = divisions.filter((div) => {
-      const matchesSearch =
+      return (
         div.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (div.head || "").toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesDept =
-        departmentFilter === "all" || div.department_id === departmentFilter;
-      return matchesSearch && matchesDept;
+        (div.head || "").toLowerCase().includes(searchTerm.toLowerCase())
+      );
     });
     setFilteredDivisions(filtered);
-  }, [searchTerm, departmentFilter, divisions]);
+  }, [searchTerm, divisions]);
 
-  const getDepartmentName = (deptId: string) => {
-    return (
-      departments.find((d) => d.id === deptId)?.name || "Unknown Department"
-    );
-  };
 
   const handleCreate = async (data: {
     name: string;
     organization_id: string;
-    department_id: string;
     head?: string;
     description?: string;
   }) => {
@@ -96,7 +79,6 @@ const DivisionsPage = () => {
   const handleUpdate = async (data: {
     name?: string;
     organization_id?: string;
-    department_id?: string;
     head?: string;
     description?: string;
   }) => {
@@ -199,20 +181,7 @@ const DivisionsPage = () => {
               className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={departmentFilter}
-              onChange={(e) => setDepartmentFilter(e.target.value)}
-              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
-            >
-              <option value="all">Semua Departemen</option>
-              {departments.map((dept) => (
-                <option key={dept.id} value={dept.id}>
-                  {dept.name}
-                </option>
-              ))}
-            </select>
-          </div>
+
         </div>
 
         {isLoading ? (
@@ -227,8 +196,8 @@ const DivisionsPage = () => {
               Tidak ada data
             </h3>
             <p className="text-muted-foreground">
-              {searchTerm || departmentFilter !== "all"
-                ? "Tidak ada divisi yang sesuai dengan filter"
+              {searchTerm
+                ? "Tidak ada divisi yang sesuai dengan pencarian"
                 : "Belum ada divisi yang ditambahkan"}
             </p>
           </div>
@@ -239,9 +208,6 @@ const DivisionsPage = () => {
                 <tr>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Nama Divisi
-                  </th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    Departemen
                   </th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Kepala Divisi
@@ -267,9 +233,6 @@ const DivisionsPage = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-primary">
-                      {getDepartmentName(div.department_id)}
-                    </td>
                     <td className="px-6 py-4 text-sm text-foreground">
                       <div className="flex items-center gap-2">
                         <UserCircle
@@ -293,7 +256,7 @@ const DivisionsPage = () => {
                           <MoreVertical size={18} />
                         </button>
                         {dropdownOpen === div.id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-10 py-1">
+                          <div className="absolute right-full top-1/2 -translate-y-1/2 mr-2 w-32 bg-white rounded-lg shadow-lg border border-border z-10 py-1 text-left animate-in fade-in slide-in-from-right-2">
                             <button
                               onClick={() => openEditModal(div)}
                               className="w-full px-4 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2"
@@ -325,7 +288,6 @@ const DivisionsPage = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={selectedDivision ? handleUpdate : handleCreate}
         division={selectedDivision}
-        departments={departments}
         organizationId={organizationId}
         title={selectedDivision ? "Edit Divisi" : "Tambah Divisi"}
       />

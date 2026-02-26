@@ -4,7 +4,7 @@ export interface Division {
   id: string;
   name: string;
   organization_id: string;
-  department_id: string;
+  department_id?: string;
   head?: string;
   description?: string;
 }
@@ -36,7 +36,7 @@ export const divisionService = {
   async create(data: {
     name: string;
     organization_id: string;
-    department_id: string;
+    department_id?: string;
     head?: string;
     description?: string;
   }): Promise<Division> {
