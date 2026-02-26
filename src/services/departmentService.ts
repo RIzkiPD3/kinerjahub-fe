@@ -64,3 +64,5 @@ export const departmentsService = {
     await api.delete(`/departments/${id}`);
   },
 };
+// Backward compatibility exports
+export const getDepartments = departmentsService.getAll;

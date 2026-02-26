@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { X, Calendar, User, Briefcase, Building, Flag } from "lucide-react";
 import { taskService, type CreateTaskDto } from "@/services/taskService";
-import { departmentsService } from "@/services/departments";
-import { divisionService, type Division } from "@/services/divisonService";
+import { departmentsService } from "@/services/departmentService";
+import { divisionService, type Division } from "@/services/divisionService";
 import { userService, type User as UserType } from "@/services/userService";
 import { toast } from "@/lib/toast";
 

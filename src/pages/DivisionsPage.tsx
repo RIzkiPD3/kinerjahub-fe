@@ -9,7 +9,7 @@ import {
   LayoutGrid,
   UserCircle,
 } from "lucide-react";
-import { divisionService, type Division } from "@/services/divisonService";
+import { divisionService, type Division } from "@/services/divisionService";
 import DivisionModal from "@/components/divisions/DivisionModal";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "@/lib/toast";
@@ -23,7 +23,9 @@ const DivisionsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
+  const [selectedDivision, setSelectedDivision] = useState<Division | null>(
+    null,
+  );
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -52,7 +54,6 @@ const DivisionsPage = () => {
     });
     setFilteredDivisions(filtered);
   }, [searchTerm, divisions]);
-
 
   const handleCreate = async (data: {
     name: string;
@@ -181,7 +182,6 @@ const DivisionsPage = () => {
               className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
             />
           </div>
-
         </div>
 
         {isLoading ? (
