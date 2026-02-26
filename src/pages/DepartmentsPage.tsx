@@ -29,46 +29,14 @@ interface ApiError {
 
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
-
-  const [filteredDepartments, setFilteredDepartments] = useState<Department[]>(
-    [],
-  );
+  const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] =
-    useState<Department | null>(null);
+  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  // Filter departments
-  useEffect(() => {
-    let filtered = departments;
-
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (dept) =>
-          dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          dept.head.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (dept.head_email?.toLowerCase() || "").includes(
-            searchTerm.toLowerCase(),
-          ) ||
-          (dept.description?.toLowerCase() || "").includes(
-            searchTerm.toLowerCase(),
-          ),
-      );
-    }
-
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((dept) => dept.status === statusFilter);
-    }
-
-    setFilteredDepartments(filtered);
-  }, [searchTerm, statusFilter, departments]);
 
   const fetchDepartments = async () => {
     setIsLoading(true);
@@ -77,13 +45,12 @@ const DepartmentsPage = () => {
       setDepartments(data);
       setFilteredDepartments(data);
     } catch (error) {
-      const apiError = error as ApiError;
-      if (apiError.response?.status === 401) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
         console.log("Unauthorized access to departments");
       } else {
         toast.error("Gagal memuat data departemen");
       }
-      console.error("Error fetching departments:", apiError);
+      console.error("Error fetching departments:", error);
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +60,6 @@ const DepartmentsPage = () => {
     fetchDepartments();
   }, []);
 
-  // Filter departments
   useEffect(() => {
     let filtered = departments;
 
@@ -103,12 +69,17 @@ const DepartmentsPage = () => {
         (dept) =>
           dept.name.toLowerCase().includes(term) ||
           (dept.division?.name || "").toLowerCase().includes(term) ||
-          (dept.head || "").toLowerCase().includes(term),
+          (dept.head || "").toLowerCase().includes(term) ||
+          (dept.description || "").toLowerCase().includes(term)
       );
     }
 
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((dept) => dept.status === statusFilter);
+    }
+
     setFilteredDepartments(filtered);
-  }, [searchTerm, departments]);
+  }, [searchTerm, statusFilter, departments]);
 
   const handleCreate = async (data: CreateDepartmentDto) => {
     try {
@@ -151,6 +122,7 @@ const DepartmentsPage = () => {
       await departmentsService.delete(selectedDepartment.id);
       toast.success("Departemen berhasil dihapus");
       fetchDepartments();
+      setIsDeleteModalOpen(false);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         toast.error(
@@ -159,7 +131,6 @@ const DepartmentsPage = () => {
       } else {
         toast.error("Gagal menghapus departemen");
       }
-      throw error;
     }
   };
 
@@ -235,11 +206,22 @@ const DepartmentsPage = () => {
             />
             <input
               type="text"
-              placeholder="Cari departemen atau divisi..."
+              placeholder="Cari departemen, divisi, atau kepala..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
             />
+          </div>
+          <div className="flex items-center gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
+            >
+              <option value="all">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="inactive">Non-aktif</option>
+            </select>
           </div>
         </div>
 
@@ -256,18 +238,10 @@ const DepartmentsPage = () => {
               Tidak ada data
             </h3>
             <p className="text-muted-foreground">
-              {searchTerm
+              {searchTerm || statusFilter !== "all"
                 ? "Tidak ada departemen yang sesuai dengan filter"
                 : "Belum ada departemen yang ditambahkan"}
             </p>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm("")}
-                className="mt-4 text-primary hover:underline text-sm font-medium"
-              >
-                Reset filter
-              </button>
-            )}
           </div>
         ) : (
           <>
@@ -284,6 +258,9 @@ const DepartmentsPage = () => {
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                       Kepala Departemen
+                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      Status
                     </th>
                     <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
                       Aksi
@@ -326,8 +303,16 @@ const DepartmentsPage = () => {
                           {dept.head || "Belum ditentukan"}
                         </div>
                       </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${dept.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                          }`}>
+                          {dept.status}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 text-right relative">
-                        <div className="relative">
+                        <div className="relative inline-block">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -341,7 +326,7 @@ const DepartmentsPage = () => {
                           </button>
 
                           {dropdownOpen === dept.id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-10">
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-10 py-1 text-left">
                               <button
                                 onClick={() => openEditModal(dept)}
                                 className="w-full px-4 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2"

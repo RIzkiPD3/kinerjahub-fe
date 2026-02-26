@@ -3,6 +3,8 @@ export interface Department {
   name: string;
   division_id: string;
   head?: string;
+  description?: string;
+  status: "active" | "inactive";
   organization?: {
     id: string;
     name: string;
@@ -19,6 +21,8 @@ export interface CreateDepartmentDto {
   name: string;
   division_id: string;
   head?: string;
+  description?: string;
+  status?: "active" | "inactive";
 }
 
 export type UpdateDepartmentDto = Partial<CreateDepartmentDto>;

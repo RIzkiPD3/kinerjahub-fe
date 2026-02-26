@@ -24,11 +24,10 @@ export const departmentsService = {
   async create(data: CreateDepartmentDto): Promise<Department> {
     console.log("Creating department with data:", data);
 
-    // Pastikan format data sesuai dengan yang diharapkan backend
     const payload = {
       name: data.name,
       head: data.head,
-      head_email: data.head_email || null,
+      division_id: data.division_id,
       description: data.description || null,
       status: data.status || "active",
     };
@@ -43,8 +42,6 @@ export const departmentsService = {
       console.error("Error in create department:", error);
       throw error;
     }
-    const response = await api.post("/departments", data);
-    return response.data.data || response.data;
   },
 
   // Update department
@@ -54,13 +51,11 @@ export const departmentsService = {
     const payload = {
       name: data.name,
       head: data.head,
-      head_email: data.head_email || null,
       description: data.description || null,
-      status: data.status,
+      status: data.status || "active",
     };
 
     const response = await api.put(`/departments/${id}`, payload);
-    const response = await api.put(`/departments/${id}`, data);
     return response.data.data || response.data;
   },
 
