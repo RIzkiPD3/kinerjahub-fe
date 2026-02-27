@@ -5,6 +5,7 @@ export type User = {
   name: string;
   email: string;
   organization_id?: string;
+  role: "admin" | "koordinator" | "staff";
 };
 
 export type LoginCredentials = {

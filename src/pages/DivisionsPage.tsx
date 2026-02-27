@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { divisionService, type Division } from "@/services/divisionService";
 import DivisionModal from "@/components/divisions/DivisionModal";
+import RoleGuard from "@/components/auth/RoleGuard";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "@/lib/toast";
 import axios from "axios";
@@ -21,7 +22,6 @@ const DivisionsPage = () => {
   const [filteredDivisions, setFilteredDivisions] = useState<Division[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<Division | null>(
     null,
@@ -123,14 +123,9 @@ const DivisionsPage = () => {
   const openEditModal = (division: Division) => {
     setSelectedDivision(division);
     setIsModalOpen(true);
-    setDropdownOpen(null);
   };
 
-  useEffect(() => {
-    const handleClickOutside = () => setDropdownOpen(null);
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+
 
   const organizationId = user?.organization_id || "";
 
@@ -156,13 +151,15 @@ const DivisionsPage = () => {
             <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
             Refresh
           </button>
-          <button
-            onClick={openCreateModal}
-            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Tambah Divisi
-          </button>
+          <RoleGuard allowedRoles="admin">
+            <button
+              onClick={openCreateModal}
+              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Tambah Divisi
+            </button>
+          </RoleGuard>
         </div>
       </div>
 
@@ -243,37 +240,24 @@ const DivisionsPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="relative inline-block">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDropdownOpen(
-                              dropdownOpen === div.id ? null : div.id,
-                            );
-                          }}
-                          className="text-muted-foreground hover:text-foreground p-2 hover:bg-secondary rounded-lg"
-                        >
-                          <MoreVertical size={18} />
-                        </button>
-                        {dropdownOpen === div.id && (
-                          <div className="absolute right-full top-1/2 -translate-y-1/2 mr-2 w-32 bg-white rounded-lg shadow-lg border border-border z-10 py-1 text-left animate-in fade-in slide-in-from-right-2">
-                            <button
-                              onClick={() => openEditModal(div)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2"
-                            >
-                              <Edit size={16} className="text-primary" />
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDelete(div.id)}
-                              className="w-full px-4 py-2 text-left text-sm hover:bg-secondary text-red-600 flex items-center gap-2"
-                            >
-                              <Trash2 size={16} />
-                              Hapus
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                      <RoleGuard allowedRoles="admin" fallback="-">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEditModal(div)}
+                            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(div.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </RoleGuard>
                     </td>
                   </tr>
                 ))}

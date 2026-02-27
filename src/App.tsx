@@ -39,9 +39,23 @@ function App() {
           }
         >
           <Route index element={<Dashboard />} />
-          <Route path="departments" element={<DepartmentsPage />} />
+          <Route
+            path="departments"
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <DepartmentsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="divisions" element={<DivisionsPage />} />
-          <Route path="users" element={<UsersPage />} />
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute allowedRoles="admin">
+                <UsersPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="tasks" element={<TasksPage />} />
         </Route>
       </Routes>

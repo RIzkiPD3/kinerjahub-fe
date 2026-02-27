@@ -11,6 +11,7 @@ import { getUsers, deleteUser, updateUser, type User } from "@/services/userServ
 import DeleteUserModal from "@/components/users/DeleteUserModal";
 import UpdateUserModal from "@/components/users/UpdateUserModal";
 import AddUserModal from "@/components/users/AddUserModal";
+import RoleGuard from "@/components/auth/RoleGuard";
 
 const UsersPage = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -136,13 +137,15 @@ const UsersPage = () => {
             Kelola akses pengguna, peran, dan informasi profil karyawan.
           </p>
         </div>
-        <button 
-          onClick={() => setIsAddModalOpen(true)}
-          className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Tambah User
-        </button>
+        <RoleGuard allowedRoles="admin">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+          >
+            <Plus size={18} />
+            Tambah User
+          </button>
+        </RoleGuard>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -151,56 +154,58 @@ const UsersPage = () => {
             key={user.id}
             className="bg-white rounded-2xl shadow-sm border border-border p-6 relative"
           >
-            <div className="absolute top-4 right-4">
-              <button
-                title="Menu"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveMenuId(
-                    activeMenuId === user.id ? null : user.id
-                  );
-                }}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <MoreVertical size={18} />
-              </button>
-
-              {/* Dropdown Menu */}
-              {activeMenuId === user.id && (
-                <div
-                  onClick={(e) =>
-                    e.stopPropagation()
-                  }
-                  className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-md z-20"
+            <RoleGuard allowedRoles="admin">
+              <div className="absolute top-4 right-4">
+                <button
+                  title="Menu"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveMenuId(
+                      activeMenuId === user.id ? null : user.id
+                    );
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
                 >
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                    onClick={() => {
-                      setUpdateTarget(user);
-                      console.log(
-                        "Edit user",
-                        user.id
-                      );
-                      setActiveMenuId(null);
-                    }}
-                  >
-                    Edit
-                  </button>
+                  <MoreVertical size={18} />
+                </button>
 
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
-                    onClick={() => {
-                      setDeleteTargetId(
-                        user.id
-                      );
-                      setActiveMenuId(null);
-                    }}
+                {/* Dropdown Menu */}
+                {activeMenuId === user.id && (
+                  <div
+                    onClick={(e) =>
+                      e.stopPropagation()
+                    }
+                    className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-md z-20"
                   >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                      onClick={() => {
+                        setUpdateTarget(user);
+                        console.log(
+                          "Edit user",
+                          user.id
+                        );
+                        setActiveMenuId(null);
+                      }}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50"
+                      onClick={() => {
+                        setDeleteTargetId(
+                          user.id
+                        );
+                        setActiveMenuId(null);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </RoleGuard>
 
 
             <div className="flex items-start gap-4 mb-6">
@@ -218,7 +223,7 @@ const UsersPage = () => {
                 </p>
 
                 <div className="mt-1 px-2 py-0.5 bg-secondary rounded text-[10px] font-bold text-muted-foreground uppercase w-fit">
-                  {user.department?.name ?? "No Dept"} 
+                  {user.department?.name ?? "No Dept"}
                 </div>
               </div>
             </div>

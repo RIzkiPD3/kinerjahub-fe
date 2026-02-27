@@ -12,6 +12,7 @@ import {
 import { taskService, type Task } from "@/services/taskService";
 import { toast } from "@/lib/toast";
 import AddTaskModal from "@/components/tasks/AddTaskModal";
+import RoleGuard from "@/components/auth/RoleGuard";
 
 // Reuse the modal components or create new ones if they don't exist
 // For now, I'll implement a simple list view to get started
@@ -110,13 +111,15 @@ const TasksPage = () => {
             <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
             Refresh
           </button>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Tambah Tugas
-          </button>
+          <RoleGuard allowedRoles="admin">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Tambah Tugas
+            </button>
+          </RoleGuard>
         </div>
       </div>
 
@@ -213,9 +216,11 @@ const TasksPage = () => {
                       {getPriorityBadge(task.priority)}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button className="text-muted-foreground hover:text-foreground p-2 rounded-lg">
-                        <MoreVertical size={18} />
-                      </button>
+                      <RoleGuard allowedRoles="admin" fallback="-">
+                        <button className="text-muted-foreground hover:text-foreground p-2 rounded-lg">
+                          <MoreVertical size={18} />
+                        </button>
+                      </RoleGuard>
                     </td>
                   </tr>
                 ))}
