@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Building2, LayoutGrid, UserCircle } from "lucide-react";
 import type { Department, CreateDepartmentDto } from "@/types/department";
-import { divisionService, type Division } from "@/services/divisonService";
+import { divisionService, type Division } from "@/services/divisionService";
 import axios from "axios";
 
 interface DepartmentModalProps {

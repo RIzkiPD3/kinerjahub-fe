@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, LayoutGrid, UserCircle } from "lucide-react";
-import type { Division } from "@/services/divisonService";
+import type { Division } from "@/services/divisionService";
 import axios from "axios";
 
 interface DivisionModalProps {
@@ -74,7 +74,7 @@ const DivisionModal = ({
       if (axios.isAxiosError(err)) {
         setError(
           err.response?.data?.message ||
-          "Terjadi kesalahan. Silakan coba lagi.",
+            "Terjadi kesalahan. Silakan coba lagi.",
         );
       } else {
         setError("Terjadi kesalahan. Silakan coba lagi.");
@@ -141,7 +141,6 @@ const DivisionModal = ({
                 />
               </div>
             </div>
-
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">

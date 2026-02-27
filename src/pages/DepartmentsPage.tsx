@@ -10,32 +10,26 @@ import {
   LayoutGrid,
   UserCircle,
 } from "lucide-react";
-import { departmentsService } from "@/services/departments";
+import { departmentsService } from "@/services/departmentService";
 import type { Department, CreateDepartmentDto } from "@/types/department";
 import DepartmentModal from "@/components/departments/DepartmentModal";
 import DeleteConfirmModal from "@/components/departments/DeleteConfirmModal";
 import { toast } from "@/lib/toast";
 import axios from "axios";
 
-interface ApiError {
-  response?: {
-    status: number;
-    data?: {
-      message?: string;
-    };
-  };
-  message?: string;
-}
 
 const DepartmentsPage = () => {
   const [departments, setDepartments] = useState<Department[]>([]);
-  const [filteredDepartments, setFilteredDepartments] = useState<Department[]>([]);
+  const [filteredDepartments, setFilteredDepartments] = useState<Department[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
+  const [selectedDepartment, setSelectedDepartment] =
+    useState<Department | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
   const fetchDepartments = async () => {
@@ -70,7 +64,7 @@ const DepartmentsPage = () => {
           dept.name.toLowerCase().includes(term) ||
           (dept.division?.name || "").toLowerCase().includes(term) ||
           (dept.head || "").toLowerCase().includes(term) ||
-          (dept.description || "").toLowerCase().includes(term)
+          (dept.description || "").toLowerCase().includes(term),
       );
     }
 
@@ -304,10 +298,13 @@ const DepartmentsPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${dept.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                          }`}>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                            dept.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
                           {dept.status}
                         </span>
                       </td>
