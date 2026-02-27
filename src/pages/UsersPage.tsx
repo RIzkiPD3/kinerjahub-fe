@@ -1,7 +1,6 @@
 import {
   Users,
   Plus,
-  Search,
   MoreVertical,
   Mail,
   GitBranch,
@@ -243,38 +242,9 @@ const UsersPage = () => {
         ))}
 
 
-        {/* Add shortcut card */}
-        <button className="bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20 p-6 flex flex-col items-center justify-center gap-4 hover:bg-primary/10 transition-all group">
-          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
-            <Plus size={24} />
-          </div>
-          <div className="text-center">
-            <p className="font-bold text-primary">Tambah User Baru</p>
-            <p className="text-xs text-muted-foreground">Cepat dan mudah</p>
-          </div>
-        </button>
       </div>
 
-      {/* Quick Search */}
-      <div className="bg-white p-4 rounded-xl border border-border flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Search className="text-muted-foreground" size={20} />
-          <input
-            type="text"
-            placeholder="Cari user berdasarkan nama, email, atau departemen..."
-            className="bg-transparent border-none outline-none text-sm w-96 text-foreground"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">
-            Ketik{" "}
-            <kbd className="px-2 py-1 bg-secondary rounded border border-border font-sans font-bold">
-              CMD + F
-            </kbd>{" "}
-            untuk cari cepat
-          </span>
-        </div>
-      </div>
+
       <DeleteUserModal
         isOpen={!!deleteTargetId}
         isLoading={isDeleting}

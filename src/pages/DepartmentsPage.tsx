@@ -13,6 +13,7 @@ import {
 import { departmentsService } from "@/services/departmentService";
 import type { Department, CreateDepartmentDto } from "@/types/department";
 import DepartmentModal from "@/components/departments/DepartmentModal";
+import RoleGuard from "@/components/auth/RoleGuard";
 import DeleteConfirmModal from "@/components/departments/DeleteConfirmModal";
 import { toast } from "@/lib/toast";
 import axios from "axios";
@@ -173,13 +174,15 @@ const DepartmentsPage = () => {
             <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
             Refresh
           </button>
-          <button
-            onClick={openCreateModal}
-            className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Tambah Departemen
-          </button>
+          <RoleGuard allowedRoles="admin">
+            <button
+              onClick={openCreateModal}
+              className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Tambah Departemen
+            </button>
+          </RoleGuard>
         </div>
       </div>
 
@@ -299,48 +302,49 @@ const DepartmentsPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                            dept.status === "active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${dept.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                            }`}
                         >
                           {dept.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right relative">
-                        <div className="relative inline-block">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDropdownOpen(
-                                dropdownOpen === dept.id ? null : dept.id,
-                              );
-                            }}
-                            className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-lg"
-                          >
-                            <MoreVertical size={18} />
-                          </button>
+                        <RoleGuard allowedRoles="admin" fallback="-">
+                          <div className="relative inline-block">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDropdownOpen(
+                                  dropdownOpen === dept.id ? null : dept.id,
+                                );
+                              }}
+                              className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-lg"
+                            >
+                              <MoreVertical size={18} />
+                            </button>
 
-                          {dropdownOpen === dept.id && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-10 py-1 text-left">
-                              <button
-                                onClick={() => openEditModal(dept)}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2"
-                              >
-                                <Edit size={16} className="text-primary" />
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => openDeleteModal(dept)}
-                                className="w-full px-4 py-2 text-left text-sm hover:bg-secondary text-red-600 flex items-center gap-2"
-                              >
-                                <Trash2 size={16} />
-                                Hapus
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                            {dropdownOpen === dept.id && (
+                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-10 py-1 text-left">
+                                <button
+                                  onClick={() => openEditModal(dept)}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2"
+                                >
+                                  <Edit size={16} className="text-primary" />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => openDeleteModal(dept)}
+                                  className="w-full px-4 py-2 text-left text-sm hover:bg-secondary text-red-600 flex items-center gap-2"
+                                >
+                                  <Trash2 size={16} />
+                                  Hapus
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </RoleGuard>
                       </td>
                     </tr>
                   ))}
