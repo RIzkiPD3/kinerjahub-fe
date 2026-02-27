@@ -2,8 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Home from "./components/sections/HomeScreen";
 import Dashboard from "./pages/Dashboard";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import AuthPage from "./pages/AuthPage";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import DepartmentsPage from "./pages/DepartmentsPage";
 import DivisionsPage from "./pages/DivisionsPage";
@@ -27,8 +26,8 @@ function App() {
             </>
           }
         />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<AuthPage initialMode="login" />} />
+        <Route path="/register" element={<AuthPage initialMode="register" />} />
 
         {/* Protected Routes */}
         <Route
