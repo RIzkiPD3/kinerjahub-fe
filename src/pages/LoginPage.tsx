@@ -1,5 +1,6 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
+import AuthLayout from "@/components/auth/AuthLayout";
 import { useState } from "react";
 import { CheckCircle, BarChart3, Users, Zap } from "lucide-react";
 
@@ -33,6 +34,33 @@ const LoginPage = () => {
   };
 
   return (
+    <AuthLayout
+      formPosition="left"
+      title="Selamat Datang"
+      subtitle="Masuk untuk mengelola tim Anda dengan lebih efisien."
+      marketingContent={{
+        hero: "Kelola Kinerja Tanpa Hambatan.",
+        description:
+          "Platform manajemen tim all-in-one untuk meningkatkan produktivitas dan transparansi organisasi Anda.",
+        features: [
+          "Tracking KPI waktu nyata",
+          "Visualisasi struktur organisasi",
+          "Delegasi tugas cerdas",
+          "Laporan kinerja instan",
+        ],
+      }}
+    >
+      {successMessage && (
+        <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 text-green-600 text-sm font-semibold rounded-2xl animate-in fade-in slide-in-from-top-2">
+          {successMessage}
+        </div>
+      )}
+
+      <LoginForm
+        onSuccess={handleLoginSuccess}
+        onSwitchToRegister={() => navigate("/register")}
+      />
+    </AuthLayout>
     <div className="min-h-screen flex">
       {/* ── Left Panel: Branding ────────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
