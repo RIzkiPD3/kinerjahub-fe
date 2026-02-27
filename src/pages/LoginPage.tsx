@@ -2,25 +2,6 @@ import { useNavigate, Link } from "react-router-dom";
 import LoginForm from "@/components/auth/LoginForm";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { useState } from "react";
-import { CheckCircle, BarChart3, Users, Zap } from "lucide-react";
-
-const features = [
-  {
-    icon: <BarChart3 size={20} />,
-    title: "Pantau Kinerja Real-time",
-    desc: "Dashboard interaktif untuk memonitor produktivitas tim secara langsung.",
-  },
-  {
-    icon: <Users size={20} />,
-    title: "Manajemen Tim Mudah",
-    desc: "Kelola departemen, divisi, dan anggota tim dalam satu platform.",
-  },
-  {
-    icon: <Zap size={20} />,
-    title: "Otomatisasi Tugas",
-    desc: "Assign, track, dan selesaikan tugas dengan alur kerja yang efisien.",
-  },
-];
 
 const LoginPage = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -34,6 +15,33 @@ const LoginPage = () => {
   };
 
   return (
+    <AuthLayout
+      formPosition="left"
+      title="Selamat Datang"
+      subtitle="Masuk untuk mengelola tim Anda dengan lebih efisien."
+      marketingContent={{
+        hero: "Kelola Kinerja Tanpa Hambatan.",
+        description:
+          "Platform manajemen tim all-in-one untuk meningkatkan produktivitas dan transparansi organisasi Anda.",
+        features: [
+          "Tracking KPI waktu nyata",
+          "Visualisasi struktur organisasi",
+          "Delegasi tugas cerdas",
+          "Laporan kinerja instan",
+        ],
+      }}
+    >
+      {successMessage && (
+        <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 text-green-600 text-sm font-semibold rounded-2xl animate-in fade-in slide-in-from-top-2">
+          {successMessage}
+        </div>
+      )}
+
+      <LoginForm
+        onSuccess={handleLoginSuccess}
+        onSwitchToRegister={() => navigate("/register")}
+      />
+    </AuthLayout>
     <>
       <AuthLayout
         formPosition="left"

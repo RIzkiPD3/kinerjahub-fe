@@ -2,25 +2,6 @@ import { useNavigate, Link } from "react-router-dom";
 import RegisterForm from "@/components/auth/RegisterForm";
 import AuthLayout from "@/components/auth/AuthLayout";
 import { useState } from "react";
-import { CheckCircle, ShieldCheck, TrendingUp, Globe } from "lucide-react";
-
-const perks = [
-  {
-    icon: <ShieldCheck size={20} />,
-    title: "Keamanan Data Terjamin",
-    desc: "Data organisasi Anda dienkripsi dan dilindungi sepenuhnya.",
-  },
-  {
-    icon: <TrendingUp size={20} />,
-    title: "Kinerja Meningkat 40%",
-    desc: "Tim yang menggunakan KinerjaHub rata-rata 40% lebih produktif.",
-  },
-  {
-    icon: <Globe size={20} />,
-    title: "Akses Dimana Saja",
-    desc: "Platform berbasis cloud yang bisa diakses dari mana saja, kapan saja.",
-  },
-];
 
 const RegisterPage = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -34,6 +15,33 @@ const RegisterPage = () => {
   };
 
   return (
+    <AuthLayout
+      formPosition="right"
+      title="Bergabunglah"
+      subtitle="Mulailah perjalanan Anda menuju tim yang lebih produktif."
+      marketingContent={{
+        hero: "Bangun Tim yang Lebih Solid.",
+        description:
+          "Daftar sekarang untuk mengakses alat kolaborasi tercanggih yang dirancang untuk pertumbuhan eksponensial.",
+        features: [
+          "Kolaborasi tim tanpa batas",
+          "Manajemen proyek terpadu",
+          "Analitik pertumbuhan tim",
+          "Keamanan data tingkat perusahaan",
+        ],
+      }}
+    >
+      {successMessage && (
+        <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 text-green-600 text-sm font-semibold rounded-2xl animate-in fade-in slide-in-from-top-2">
+          {successMessage}
+        </div>
+      )}
+
+      <RegisterForm
+        onSuccess={handleRegisterSuccess}
+        onSwitchToLogin={() => navigate("/login")}
+      />
+    </AuthLayout>
     <>
       <AuthLayout
         formPosition="right"
