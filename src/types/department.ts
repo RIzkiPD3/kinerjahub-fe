@@ -1,19 +1,26 @@
 export interface Department {
   id: string;
   name: string;
-  head: string;
-  head_email?: string;
-  members: number;
-  status: "active" | "inactive";
+  division_id: string;
+  head?: string;
   description?: string;
+  status: "active" | "inactive";
+  organization?: {
+    id: string;
+    name: string;
+  };
+  division?: {
+    id: string;
+    name: string;
+  };
   created_at?: string;
   updated_at?: string;
 }
 
 export interface CreateDepartmentDto {
   name: string;
-  head: string;
-  head_email?: string;
+  division_id: string;
+  head?: string;
   description?: string;
   status?: "active" | "inactive";
 }

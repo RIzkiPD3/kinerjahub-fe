@@ -7,6 +7,7 @@ import {
   Bell,
   LayoutDashboard,
   ChevronRight,
+  CheckSquare,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
@@ -29,19 +30,24 @@ const DashboardLayout = () => {
       exact: true,
     },
     {
-      path: "/dashboard/departments",
-      icon: <Building size={20} />,
-      label: "Department",
-    },
-    {
       path: "/dashboard/divisions",
       icon: <Briefcase size={20} />,
       label: "Division",
     },
     {
+      path: "/dashboard/departments",
+      icon: <Building size={20} />,
+      label: "Department",
+    },
+    {
       path: "/dashboard/users",
       icon: <Users size={20} />,
       label: "User",
+    },
+    {
+      path: "/dashboard/tasks",
+      icon: <CheckSquare size={20} />,
+      label: "Task",
     },
   ];
 
@@ -69,10 +75,11 @@ const DashboardLayout = () => {
               <NavLink
                 key={item.path}
                 to={item.path}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${active
-                  ? "bg-white/20"
-                  : "hover:bg-white/5 text-white/70 hover:text-white"
-                  }`}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  active
+                    ? "bg-white/20"
+                    : "hover:bg-white/5 text-white/70 hover:text-white"
+                }`}
               >
                 {item.icon}
                 <span className="font-medium">{item.label}</span>
