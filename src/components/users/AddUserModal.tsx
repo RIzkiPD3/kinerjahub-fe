@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { X, Plus } from "lucide-react";
 import { createUser, type CreateUserPayload } from "@/services/userService";
-import { getDepartments } from "@/services/departementService";
-import { getDivisionsByDepartment } from "@/services/divisonService";
+import { getDepartments } from "@/services/departmentService";
+import { getDivisionsByDepartment } from "@/services/divisionService";
 import { getRoles, createRole, type Role } from "@/services/roleService";
 
 interface Props {

@@ -1,73 +1,61 @@
 import { useState, useEffect } from "react";
-import { X, Building2, LayoutGrid, UserCircle } from "lucide-react";
-import type { Department, CreateDepartmentDto } from "@/types/department";
-import { divisionService, type Division } from "@/services/divisionService";
+import { X, LayoutGrid, UserCircle } from "lucide-react";
+import type { Division } from "@/services/divisionService";
 import axios from "axios";
 
-interface DepartmentModalProps {
+interface DivisionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreateDepartmentDto) => Promise<void>;
-  department?: Department | null;
+  onSubmit: (data: {
+    name: string;
+    organization_id: string;
+    head?: string;
+    description?: string;
+  }) => Promise<void>;
+  division?: Division | null;
+  organizationId: string;
   title: string;
 }
 
-const DepartmentModal = ({
+const DivisionModal = ({
   isOpen,
   onClose,
   onSubmit,
-  department,
+  division,
+  organizationId,
   title,
-}: DepartmentModalProps) => {
-  const [formData, setFormData] = useState<CreateDepartmentDto>({
+}: DivisionModalProps) => {
+  const [formData, setFormData] = useState({
     name: "",
-    division_id: "",
     head: "",
+    description: "",
   });
-  const [divisions, setDivisions] = useState<Division[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      divisionService.getAll().then(setDivisions);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (department) {
+    if (division) {
       setFormData({
-        name: department.name,
-        division_id: department.division_id || department.division?.id || "",
-        head: department.head || "",
+        name: division.name,
+        head: division.head || "",
+        description: division.description || "",
       });
     } else {
       setFormData({
         name: "",
-        division_id: "",
         head: "",
+        description: "",
       });
     }
-  }, [department, isOpen]);
+  }, [division, isOpen]);
 
   if (!isOpen) return null;
-
-  const validateForm = (): boolean => {
-    if (!formData.name.trim()) {
-      setError("Nama departemen harus diisi");
-      return false;
-    }
-    if (!formData.division_id) {
-      setError("Divisi harus dipilih");
-      return false;
-    }
-    return true;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!formData.name.trim()) {
+      setError("Nama divisi harus diisi");
       return;
     }
 
@@ -77,8 +65,9 @@ const DepartmentModal = ({
     try {
       await onSubmit({
         name: formData.name.trim(),
-        division_id: formData.division_id,
-        head: formData.head?.trim() || undefined,
+        organization_id: organizationId,
+        head: formData.head.trim() || undefined,
+        description: formData.description.trim() || undefined,
       });
       onClose();
     } catch (err) {
@@ -96,7 +85,7 @@ const DepartmentModal = ({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -122,9 +111,9 @@ const DepartmentModal = ({
             </button>
             <h2 className="text-2xl font-bold text-white">{title}</h2>
             <p className="text-white/80 text-sm mt-1">
-              {department
-                ? "Edit informasi departemen yang sudah ada"
-                : "Isi informasi untuk departemen baru"}
+              {division
+                ? "Edit informasi divisi yang sudah ada"
+                : "Isi informasi untuk divisi baru"}
             </p>
           </div>
 
@@ -137,17 +126,17 @@ const DepartmentModal = ({
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Nama Departemen *
+                Nama Divisi *
               </label>
               <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                <LayoutGrid className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground"
-                  placeholder="Contoh: Information Technology"
+                  placeholder="Contoh: Teknologi Informasi"
                   required
                 />
               </div>
@@ -155,7 +144,7 @@ const DepartmentModal = ({
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Kepala Departemen
+                Kepala Divisi
               </label>
               <div className="relative">
                 <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
@@ -165,31 +154,25 @@ const DepartmentModal = ({
                   value={formData.head}
                   onChange={handleChange}
                   className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground"
-                  placeholder="Masukkan nama kepala departemen"
+                  placeholder="Masukkan nama kepala divisi"
                 />
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Divisi (Parent) *
+                Deskripsi
               </label>
               <div className="relative">
-                <LayoutGrid className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                <select
-                  name="division_id"
-                  value={formData.division_id}
+                <LayoutGrid className="absolute left-3 top-3 text-muted-foreground w-5 h-5" />
+                <textarea
+                  name="description"
+                  value={formData.description}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground appearance-none"
-                  required
-                >
-                  <option value="">Pilih Divisi</option>
-                  {divisions.map((div) => (
-                    <option key={div.id} value={div.id}>
-                      {div.name}
-                    </option>
-                  ))}
-                </select>
+                  rows={3}
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 bg-background text-foreground resize-none"
+                  placeholder="Deskripsi singkat tentang divisi ini..."
+                />
               </div>
             </div>
 
@@ -223,4 +206,4 @@ const DepartmentModal = ({
   );
 };
 
-export default DepartmentModal;
+export default DivisionModal;
