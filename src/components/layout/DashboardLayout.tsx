@@ -189,12 +189,16 @@ const DashboardLayout = () => {
                 <p className="text-sm font-bold text-foreground">
                   {user?.name || "User KinerjaHub"}
                 </p>
-                <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">
-                  {user?.email || "Admin"}
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                  {user?.role === "admin"
+                    ? "Administrator"
+                    : user?.role === "koordinator"
+                      ? "Koordinator"
+                      : "Staff"}
                 </p>
               </div>
-              <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-md">
-                {(user?.name || "U")[0]}
+              <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-primary/20">
+                {(user?.name || "U")[0].toUpperCase()}
               </div>
             </div>
           </div>

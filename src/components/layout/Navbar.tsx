@@ -1,7 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   return (
     <nav className="w-full bg-primary border-b border-white/10 shadow-md">
@@ -37,14 +39,23 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* Tombol Masuk */}
+          {/* Tombol Masuk / Dashboard */}
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate("/login")}
-              className="bg-white text-primary px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
-            >
-              Masuk
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="bg-white text-primary px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
+              >
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-white text-primary px-6 py-2 rounded-full font-semibold hover:shadow-lg transition-all"
+              >
+                Masuk
+              </button>
+            )}
           </div>
         </div>
       </div>
