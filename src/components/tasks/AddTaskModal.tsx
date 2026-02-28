@@ -25,6 +25,7 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
   const [divisionId, setDivisionId] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [storyPoints, setStoryPoints] = useState(1);
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
@@ -34,20 +35,34 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
 
   useEffect(() => {
     if (isOpen) {
-      departmentsService.getAll().then(setDepartments);
-      userService.getAll().then(setUsers);
+      divisionService.getAll()
+        .then(setDivisions)
+        .catch(err => {
+          console.error("Error loading divisions:", err);
+          toast.error("Gagal memuat data divisi");
+        });
+      userService.getAll()
+        .then(setUsers)
+        .catch(err => {
+          console.error("Error loading users:", err);
+        });
     }
   }, [isOpen]);
 
   useEffect(() => {
-    if (!departmentId) {
-      setDivisions([]);
-      setDivisionId("");
+    if (!divisionId) {
+      setDepartments([]);
+      setDepartmentId("");
       return;
     }
 
-    divisionService.getByDepartment(departmentId).then(setDivisions);
-  }, [departmentId]);
+    departmentsService.getByDivision(divisionId)
+      .then(setDepartments)
+      .catch(err => {
+        console.error("Error loading departments:", err);
+        toast.error("Gagal memuat data departemen");
+      });
+  }, [divisionId]);
 
   useEffect(() => {
     let result = users;
@@ -69,8 +84,8 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description) {
-      toast.error("Judul dan deskripsi wajib diisi!");
+    if (!title || !description || !divisionId || !departmentId || !storyPoints || !dueDate) {
+      toast.error("Judul, deskripsi, divisi, departemen, points, dan deadline wajib diisi!");
       return;
     }
 
@@ -80,17 +95,20 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
         title,
         description,
         priority,
-        assignee_id: assigneeId || undefined,
-        due_date: dueDate || undefined,
+        department_id: departmentId,
+        assigned_to: assigneeId || null,
+        deadline: dueDate,
+        story_point: storyPoints,
       };
 
       await taskService.create(payload);
       toast.success("Tugas berhasil dibuat!");
       onSuccess();
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating task:", error);
-      toast.error("Gagal membuat tugas");
+      const message = error.response?.data?.message || error.response?.data?.errors?.[0]?.message || "Gagal membuat tugas";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -104,6 +122,7 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
     setDivisionId("");
     setAssigneeId("");
     setDueDate("");
+    setStoryPoints(1);
   };
 
   const handleClose = () => {
@@ -194,32 +213,26 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
                 className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
               />
             </div>
+
+            {/* Story Points */}
+            <div>
+              <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Flag size={16} className="text-primary" />
+                Story Points (1-10)
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={storyPoints}
+                onChange={(e) => setStoryPoints(parseInt(e.target.value) || 1)}
+                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition"
+                required
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            {/* Department */}
-            <div>
-              <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Building size={16} className="text-primary" />
-                Departemen
-              </label>
-              <select
-                value={departmentId}
-                onChange={(e) => {
-                  setDepartmentId(e.target.value);
-                  setDivisionId("");
-                }}
-                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition appearance-none cursor-pointer"
-              >
-                <option value="">Semua Departemen</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* Division */}
             <div>
               <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
@@ -228,12 +241,35 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
               </label>
               <select
                 value={divisionId}
-                onChange={(e) => setDivisionId(e.target.value)}
-                disabled={!departmentId}
-                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition appearance-none cursor-pointer disabled:opacity-50"
+                onChange={(e) => {
+                  setDivisionId(e.target.value);
+                  setDepartmentId("");
+                }}
+                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition cursor-pointer"
               >
-                <option value="">Semua Divisi</option>
+                <option value="">Pilih Divisi</option>
                 {divisions.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Department */}
+            <div>
+              <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Building size={16} className="text-primary" />
+                Departemen
+              </label>
+              <select
+                value={departmentId}
+                onChange={(e) => setDepartmentId(e.target.value)}
+                disabled={!divisionId}
+                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition cursor-pointer disabled:opacity-50"
+              >
+                <option value="">Pilih Departemen</option>
+                {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
                   </option>
@@ -251,7 +287,7 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
             <select
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
-              className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition appearance-none cursor-pointer"
+              className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition cursor-pointer"
             >
               <option value="">Pilih Anggota Tim</option>
               {filteredUsers.map((u) => (

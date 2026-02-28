@@ -8,11 +8,18 @@ import {
   Clock,
   AlertCircle,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { taskService, type Task } from "@/services/taskService";
+import { departmentsService } from "@/services/departmentService";
+import { divisionService, type Division } from "@/services/divisionService";
+import { TaskStatus, TaskStatusLabels } from "@/types/task";
 import { toast } from "@/lib/toast";
+import { formatDate } from "@/lib/utils";
 import AddTaskModal from "@/components/tasks/AddTaskModal";
+import EditTaskModal from "@/components/tasks/EditTaskModal";
 import RoleGuard from "@/components/auth/RoleGuard";
+import type { Department } from "@/types/department";
 
 // Reuse the modal components or create new ones if they don't exist
 // For now, I'll implement a simple list view to get started
@@ -23,7 +30,13 @@ const TasksPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [divisionFilter, setDivisionFilter] = useState<string>("all");
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [divisions, setDivisions] = useState<Division[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const fetchTasks = async () => {
     setIsLoading(true);
@@ -40,8 +53,20 @@ const TasksPage = () => {
     }
   };
 
+  const fetchFilterData = async () => {
+    try {
+      const depts = await departmentsService.getAll();
+      const divs = await divisionService.getAll();
+      setDepartments(depts);
+      setDivisions(divs);
+    } catch (error) {
+      console.error("Error fetching filters:", error);
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
+    fetchFilterData();
   }, []);
 
   useEffect(() => {
@@ -50,8 +75,8 @@ const TasksPage = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (task) =>
-          task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchTerm.toLowerCase()),
+          (task.title?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+          (task.description?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -59,17 +84,27 @@ const TasksPage = () => {
       filtered = filtered.filter((task) => task.status === statusFilter);
     }
 
+    if (departmentFilter !== "all") {
+      filtered = filtered.filter((task) => task.department?.id === departmentFilter);
+    }
+
+    if (divisionFilter !== "all") {
+      filtered = filtered.filter((task) => task.division?.name === divisionFilter);
+    }
+
     setFilteredTasks(filtered);
-  }, [searchTerm, statusFilter, tasks]);
+  }, [searchTerm, statusFilter, departmentFilter, divisionFilter, tasks]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "todo":
+      case TaskStatus.TO_DO:
         return <AlertCircle size={16} className="text-blue-500" />;
-      case "in_progress":
+      case TaskStatus.IN_PROGRESS:
         return <Clock size={16} className="text-orange-500" />;
-      case "done":
+      case TaskStatus.DONE:
         return <CheckCircle2 size={16} className="text-green-500" />;
+      case TaskStatus.DELIVERED:
+        return <CheckSquare size={16} className="text-purple-500" />;
       default:
         return null;
     }
@@ -85,9 +120,14 @@ const TasksPage = () => {
       <span
         className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${colors[priority as keyof typeof colors] || "bg-gray-100"}`}
       >
-        {priority.toUpperCase()}
+        {priority ? priority.toUpperCase() : "NORMAL"}
       </span>
     );
+  };
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsEditModalOpen(true);
   };
 
   return (
@@ -146,9 +186,37 @@ const TasksPage = () => {
               className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
             >
               <option value="all">Semua Status</option>
-              <option value="todo">Belum Dimulai</option>
-              <option value="in_progress">Dalam Pengerjaan</option>
-              <option value="done">Selesai</option>
+              {Object.values(TaskStatus).map((s) => (
+                <option key={s} value={s}>
+                  {TaskStatusLabels[s]}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={departmentFilter}
+              onChange={(e) => setDepartmentFilter(e.target.value)}
+              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
+            >
+              <option value="all">Semua Departemen</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={divisionFilter}
+              onChange={(e) => setDivisionFilter(e.target.value)}
+              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
+            >
+              <option value="all">Semua Divisi</option>
+              {divisions.map((d) => (
+                <option key={d.id} value={d.name}>
+                  {d.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -174,16 +242,22 @@ const TasksPage = () => {
             <table className="w-full text-left">
               <thead className="bg-secondary/50 border-b border-border">
                 <tr>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    Tugas
+                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider w-1/3">
+                    Tugas & Detail
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Penerima
+                  </th>
+                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Deadline
+                  </th>
+                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Prioritas
                   </th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
+                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
                     Aksi
                   </th>
                 </tr>
@@ -194,32 +268,70 @@ const TasksPage = () => {
                     key={task.id}
                     className="hover:bg-secondary/30 transition-colors"
                   >
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-foreground">
+                    <td className="px-4 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-semibold text-foreground line-clamp-1">
                           {task.title}
                         </span>
-                        <span className="text-xs text-muted-foreground line-clamp-1">
+                        <span className="text-xs text-muted-foreground line-clamp-1 mb-1">
                           {task.description}
                         </span>
+                        <div className="flex flex-wrap gap-1.5 items-center mt-1">
+                          {task.department?.name && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+                              {task.department.name}
+                            </span>
+                          )}
+                          {task.division?.name && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-50 text-slate-700 border border-slate-100">
+                              {task.division.name}
+                            </span>
+                          )}
+                          {task.story_point && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-orange-50 text-orange-700 border border-orange-100">
+                              {task.story_point} pts
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="flex items-center gap-2 text-sm font-medium">
                         {getStatusIcon(task.status)}
-                        <span className="capitalize">
-                          {task.status.replace("_", " ")}
+                        <span>
+                          {TaskStatusLabels[task.status as TaskStatus] || task.status || "Unknown"}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 bg-primary/10 text-primary rounded-full flex items-center justify-center text-[10px] font-bold">
+                          {(task.assignee?.name || "U")[0]}
+                        </div>
+                        <span className="text-sm font-medium text-foreground">
+                          {task.assignee?.name || "(Kosong)"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className="text-sm font-medium text-foreground">
+                        {formatDate(task.deadline)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
                       {getPriorityBadge(task.priority)}
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-4 py-4 text-right">
                       <RoleGuard allowedRoles="admin" fallback="-">
-                        <button className="text-muted-foreground hover:text-foreground p-2 rounded-lg">
-                          <MoreVertical size={18} />
-                        </button>
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleEditTask(task)}
+                            className="text-primary hover:text-blue-700 p-2 rounded-lg hover:bg-primary/10 transition-colors"
+                            title="Edit Tugas"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                        </div>
                       </RoleGuard>
                     </td>
                   </tr>
@@ -234,6 +346,16 @@ const TasksPage = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSuccess={fetchTasks}
+      />
+
+      <EditTaskModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedTask(null);
+        }}
+        onSuccess={fetchTasks}
+        task={selectedTask}
       />
     </div>
   );

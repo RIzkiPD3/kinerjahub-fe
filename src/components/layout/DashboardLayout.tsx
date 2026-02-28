@@ -8,14 +8,18 @@ import {
   LayoutDashboard,
   ChevronRight,
   CheckSquare,
+  ChevronDown,
+  CalendarDays,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [isOrgOpen, setIsOrgOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -30,24 +34,38 @@ const DashboardLayout = () => {
       exact: true,
     },
     {
-      path: "/dashboard/divisions",
-      icon: <Briefcase size={20} />,
-      label: "Division",
-    },
-    {
-      path: "/dashboard/departments",
+      label: "Organization",
       icon: <Building size={20} />,
-      label: "Department",
-    },
-    {
-      path: "/dashboard/users",
-      icon: <Users size={20} />,
-      label: "User",
+      isDropdown: true,
+      isOpen: isOrgOpen,
+      setOpen: setIsOrgOpen,
+      subItems: [
+        {
+          path: "/dashboard/divisions",
+          icon: <Briefcase size={18} />,
+          label: "Division",
+        },
+        {
+          path: "/dashboard/departments",
+          icon: <Building size={18} />,
+          label: "Department",
+        },
+        {
+          path: "/dashboard/users",
+          icon: <Users size={18} />,
+          label: "User",
+        },
+      ],
     },
     {
       path: "/dashboard/tasks",
       icon: <CheckSquare size={20} />,
       label: "Task",
+    },
+    {
+      path: "/dashboard/attendance",
+      icon: <CalendarDays size={20} />,
+      label: "Absensi",
     },
   ];
 
@@ -56,6 +74,10 @@ const DashboardLayout = () => {
       return location.pathname === path;
     }
     return location.pathname.startsWith(path);
+  };
+
+  const isAnySubItemActive = (subItems: any[]) => {
+    return subItems.some((item) => isActive(item.path));
   };
 
   return (
@@ -68,18 +90,64 @@ const DashboardLayout = () => {
           </h1>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          {menuItems.map((item) => {
-            const active = isActive(item.path, item.exact);
+        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
+          {menuItems.map((item, index) => {
+            if (item.isDropdown) {
+              const active = isAnySubItemActive(item.subItems || []);
+              return (
+                <div key={index} className="space-y-1">
+                  <button
+                    onClick={() => item.setOpen?.(!item.isOpen)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${active || item.isOpen
+                      ? "bg-white/10"
+                      : "hover:bg-white/5 text-white/70 hover:text-white"
+                      }`}
+                  >
+                    {item.icon}
+                    <span className="font-medium">{item.label}</span>
+                    <ChevronDown
+                      size={16}
+                      className={`ml-auto transition-transform duration-200 ${item.isOpen ? "rotate-180" : ""
+                        }`}
+                    />
+                  </button>
+
+                  <div
+                    className={`pl-4 space-y-1 overflow-hidden transition-all duration-300 ${item.isOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+                      }`}
+                  >
+                    {item.subItems?.map((subItem) => {
+                      const subActive = isActive(subItem.path);
+                      return (
+                        <NavLink
+                          key={subItem.path}
+                          to={subItem.path}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${subActive
+                            ? "bg-white/20 text-white"
+                            : "hover:bg-white/5 text-white/60 hover:text-white"
+                            }`}
+                        >
+                          {subItem.icon}
+                          <span className="text-sm font-medium">
+                            {subItem.label}
+                          </span>
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
+            const active = isActive(item.path!, item.exact);
             return (
               <NavLink
                 key={item.path}
-                to={item.path}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  active
-                    ? "bg-white/20"
-                    : "hover:bg-white/5 text-white/70 hover:text-white"
-                }`}
+                to={item.path!}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${active
+                  ? "bg-white/20"
+                  : "hover:bg-white/5 text-white/70 hover:text-white"
+                  }`}
               >
                 {item.icon}
                 <span className="font-medium">{item.label}</span>

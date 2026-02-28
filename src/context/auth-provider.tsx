@@ -9,14 +9,19 @@ import api from "@/lib/api";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    const hasToken = !!localStorage.getItem("token");
-    console.log(
-      "Auth state on init:",
-      hasToken ? "Authenticated" : "Not authenticated",
-    );
-    return hasToken;
+    return !!localStorage.getItem("token");
   });
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
 
   const login = async (credentials: LoginCredentials) => {
     console.log("Login attempt with email:", credentials.email);
@@ -52,14 +57,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (token && userData) {
+        // Map role from object structure if needed
+        const role = typeof userData.role === 'object'
+          ? userData.role.name.toLowerCase()
+          : (userData.role || "").toLowerCase();
+
+        const mappedUser = {
+          ...userData,
+          role
+        };
+
         localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(mappedUser));
         setIsAuthenticated(true);
-        setUser(userData);
+        setUser(mappedUser);
+
         console.log("Login success:", {
-          userId: userData.id,
-          email: userData.email,
-          organization_id:
-            userData.organization_id || userData.organization?.id,
+          userId: mappedUser.id,
+          role: mappedUser.role,
         });
       } else {
         throw new Error("Token atau user data tidak ditemukan dalam response");
@@ -68,13 +83,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Login failed:", error);
       throw error;
     }
-    const response = await api.post("/auth/login", credentials);
-    const { token, user: userData } = response.data.data;
-    localStorage.setItem("token", token);
-    setIsAuthenticated(true);
-    setUser(userData);
-    console.log("Login successful:", userData);
-    console.log("Token stored in localStorage:", token);
   };
 
   const register = async (data: RegisterData) => {
@@ -117,22 +125,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (token) {
+        // Map role from object structure if needed
+        const role = typeof userData.role === 'object'
+          ? userData.role.name.toLowerCase()
+          : (userData.role || "").toLowerCase();
+
+        const mappedUser = {
+          ...userData,
+          role
+        };
+
         localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(mappedUser));
         setIsAuthenticated(true);
         if (userData) {
-          setUser(userData);
+          setUser(mappedUser);
         }
       } else {
-        // Jika tidak ada token, jangan set authenticated
         setIsAuthenticated(false);
         setUser(null);
       }
-
-      console.log("Register processed:", {
-        hasToken: !!token,
-        hasUserData: !!userData,
-        isAuthenticated: !!token,
-      });
     } catch (error) {
       console.error("Register failed:", error);
       throw error;
@@ -142,6 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     console.log("Logout user:", user?.email);
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsAuthenticated(false);
     setUser(null);
   };

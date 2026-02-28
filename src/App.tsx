@@ -8,6 +8,7 @@ import DepartmentsPage from "./pages/DepartmentsPage";
 import DivisionsPage from "./pages/DivisionsPage";
 import UsersPage from "./pages/UsersPage";
 import TasksPage from "./pages/TasksPage";
+import AttendancePage from "./pages/AttendancePage";
 import { ToastContainer } from "./components/ui/Toast";
 import ProtectedRoute from "./components/auth/protected-route";
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="divisions" element={<DivisionsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="tasks" element={<TasksPage />} />
+          <Route path="attendance" element={<AttendancePage />} />
         </Route>
       </Routes>
     </div>

@@ -14,6 +14,14 @@ export const departmentsService = {
       : response.data.data || [];
   },
 
+  // Get departments by division
+  async getByDivision(divisionId: string): Promise<Department[]> {
+    const response = await api.get(`/departments?division_id=${divisionId}`);
+    return Array.isArray(response.data)
+      ? response.data
+      : response.data.data || [];
+  },
+
   // Get single department
   async getById(id: string): Promise<Department> {
     const response = await api.get(`/departments/${id}`);

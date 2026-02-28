@@ -1,14 +1,29 @@
 import api from "@/lib/api";
+import { TaskStatus } from "@/types/task";
 
 export interface Task {
   id: string;
   title: string;
   description: string;
-  status: "todo" | "in_progress" | "done";
+  status: TaskStatus;
   priority: "low" | "medium" | "high";
-  assignee_id?: string;
+  assigned_to?: string;
   creator_id: string;
-  due_date?: string;
+  deadline?: string;
+  story_point?: number;
+  assignee?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  department?: {
+    id: string;
+    name: string;
+  };
+  division?: {
+    id: string;
+    name: string;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -17,17 +32,20 @@ export interface CreateTaskDto {
   title: string;
   description: string;
   priority: "low" | "medium" | "high";
-  assignee_id?: string;
-  due_date?: string;
+  department_id: string;
+  assigned_to?: string | null;
+  deadline: string;
+  story_point: number;
 }
 
 export interface UpdateTaskDto {
   title?: string;
   description?: string;
-  status?: "todo" | "in_progress" | "done";
+  status?: TaskStatus;
   priority?: "low" | "medium" | "high";
-  assignee_id?: string;
-  due_date?: string;
+  assigned_to?: string | null;
+  deadline?: string;
+  story_point?: number;
 }
 
 export const taskService = {
@@ -54,6 +72,8 @@ export const taskService = {
 
   // Update task - Per API.md uses PATCH
   async update(id: string, data: UpdateTaskDto): Promise<Task> {
+    console.log("[taskService.update] id:", id);
+    console.log("[taskService.update] payload:", JSON.stringify(data, null, 2));
     const response = await api.patch(`/tasks/${id}`, data);
     return response.data.data || response.data;
   },
@@ -66,7 +86,7 @@ export const taskService = {
   // Assign task to user
   async assign(id: string, userId: string): Promise<Task> {
     const response = await api.patch(`/tasks/${id}/assign`, {
-      assignee_id: userId,
+      assigned_to: userId,
     });
     return response.data.data || response.data;
   },
