@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { X, Calendar, User, Briefcase, Building, Flag } from "lucide-react";
+import { X, Calendar, User } from "lucide-react";
 import { taskService, type CreateTaskDto } from "@/services/taskService";
-import { departmentsService } from "@/services/departmentService";
-import { divisionService, type Division } from "@/services/divisionService";
 import { userService, type User as UserType } from "@/services/userService";
 import { toast } from "@/lib/toast";
 
@@ -10,6 +8,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  defaultProjectId?: string;
 }
 
 interface Department {
@@ -17,75 +16,41 @@ interface Department {
   name: string;
 }
 
-export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
+export default function AddTaskModal({ isOpen, onClose, onSuccess, defaultProjectId }: Props) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
-  const [departmentId, setDepartmentId] = useState("");
-  const [divisionId, setDivisionId] = useState("");
   const [assigneeId, setAssigneeId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [storyPoints, setStoryPoints] = useState(1);
+  const [projectId, setProjectId] = useState(defaultProjectId || "");
 
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [divisions, setDivisions] = useState<Division[]>([]);
   const [users, setUsers] = useState<UserType[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
-      divisionService.getAll()
-        .then(setDivisions)
-        .catch(err => {
-          console.error("Error loading divisions:", err);
-          toast.error("Gagal memuat data divisi");
-        });
       userService.getAll()
         .then(setUsers)
         .catch(err => {
           console.error("Error loading users:", err);
         });
+
+      if (defaultProjectId) {
+        setProjectId(defaultProjectId);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, defaultProjectId]);
+
 
   useEffect(() => {
-    if (!divisionId) {
-      setDepartments([]);
-      setDepartmentId("");
-      return;
-    }
-
-    departmentsService.getByDivision(divisionId)
-      .then(setDepartments)
-      .catch(err => {
-        console.error("Error loading departments:", err);
-        toast.error("Gagal memuat data departemen");
-      });
-  }, [divisionId]);
-
-  useEffect(() => {
-    let result = users;
-
-    if (departmentId) {
-      result = result.filter((u) => u.department?.id === departmentId);
-    }
-
-    if (divisionId) {
-      result = result.filter((u) => u.division?.id === divisionId);
-    }
-
-    setFilteredUsers(result);
-    // If current assignee is not in filtered list, reset it
-    if (assigneeId && !result.find((u) => u.id === assigneeId)) {
-      setAssigneeId("");
-    }
-  }, [departmentId, divisionId, users, assigneeId]);
+    setFilteredUsers(users);
+  }, [users]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !divisionId || !departmentId || !storyPoints || !dueDate) {
-      toast.error("Judul, deskripsi, divisi, departemen, points, dan deadline wajib diisi!");
+    if (!title || !description || !storyPoints || !dueDate || !projectId) {
+      toast.error("Judul, deskripsi, proyek, points, dan deadline wajib diisi!");
       return;
     }
 
@@ -94,14 +59,12 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
       const payload: CreateTaskDto = {
         title,
         description,
-        priority,
-        department_id: departmentId,
         assigned_to: assigneeId || null,
         deadline: dueDate,
         story_point: storyPoints,
       };
 
-      await taskService.create(payload);
+      await taskService.create(projectId, payload);
       toast.success("Tugas berhasil dibuat!");
       onSuccess();
       handleClose();
@@ -117,12 +80,10 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setPriority("medium");
-    setDepartmentId("");
-    setDivisionId("");
     setAssigneeId("");
     setDueDate("");
     setStoryPoints(1);
+    setProjectId(defaultProjectId || "");
   };
 
   const handleClose = () => {
@@ -181,24 +142,6 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Priority */}
-            <div>
-              <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Flag size={16} className="text-primary" />
-                Prioritas
-              </label>
-              <select
-                value={priority}
-                onChange={(e) =>
-                  setPriority(e.target.value as "low" | "medium" | "high")
-                }
-                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition appearance-none cursor-pointer"
-              >
-                <option value="low">Rendah</option>
-                <option value="medium">Sedang</option>
-                <option value="high">Tinggi</option>
-              </select>
-            </div>
 
             {/* Due Date */}
             <div>
@@ -217,7 +160,6 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
             {/* Story Points */}
             <div>
               <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Flag size={16} className="text-primary" />
                 Story Points (1-10)
               </label>
               <input
@@ -232,51 +174,6 @@ export default function AddTaskModal({ isOpen, onClose, onSuccess }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-            {/* Division */}
-            <div>
-              <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Briefcase size={16} className="text-primary" />
-                Divisi
-              </label>
-              <select
-                value={divisionId}
-                onChange={(e) => {
-                  setDivisionId(e.target.value);
-                  setDepartmentId("");
-                }}
-                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition cursor-pointer"
-              >
-                <option value="">Pilih Divisi</option>
-                {divisions.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Department */}
-            <div>
-              <label className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Building size={16} className="text-primary" />
-                Departemen
-              </label>
-              <select
-                value={departmentId}
-                onChange={(e) => setDepartmentId(e.target.value)}
-                disabled={!divisionId}
-                className="w-full px-4 py-2.5 bg-secondary/50 border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition cursor-pointer disabled:opacity-50"
-              >
-                <option value="">Pilih Departemen</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
 
           {/* Assignee */}
           <div>

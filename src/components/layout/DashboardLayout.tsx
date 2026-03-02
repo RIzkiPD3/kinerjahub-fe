@@ -7,9 +7,9 @@ import {
   Bell,
   LayoutDashboard,
   ChevronRight,
-  CheckSquare,
   ChevronDown,
   CalendarDays,
+  FolderKanban,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useNavigate, Outlet, NavLink, useLocation } from "react-router-dom";
@@ -58,9 +58,9 @@ const DashboardLayout = () => {
       ],
     },
     {
-      path: "/dashboard/tasks",
-      icon: <CheckSquare size={20} />,
-      label: "Task",
+      path: "/dashboard/projects",
+      icon: <FolderKanban size={20} />,
+      label: "Proyek",
     },
     {
       path: "/dashboard/attendance",

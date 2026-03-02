@@ -70,7 +70,7 @@ Berikut adalah daftar lengkap endpoint API yang tersedia di backend KinerjaHub a
 | Method | Endpoint | Access Control | Description |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/` | All Authenticated | Get tasks (with role-based filtering) |
-| `POST` | `/` | Admin/Koordinator | Create a new task |
+| `POST` | `/projects/:projectId/tasks` | Admin/Koordinator | Create a new task (Nested) |
 | `GET` | `/:id` | All Authenticated | Get task details |
 | `PATCH` | `/:id` | All Authenticated | Update task (status, etc.) |
 | `DELETE` | `/:id` | Admin Only | Delete a task |

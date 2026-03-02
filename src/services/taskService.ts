@@ -6,12 +6,16 @@ export interface Task {
   title: string;
   description: string;
   status: TaskStatus;
-  priority: "low" | "medium" | "high";
   assigned_to?: string;
   creator_id: string;
   deadline?: string;
   story_point?: number;
   assignee?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  assignedUser?: {
     id: string;
     name: string;
     email: string;
@@ -24,6 +28,10 @@ export interface Task {
     id: string;
     name: string;
   };
+  project_id?: string;
+  projectName?: string;
+  divisionName?: string;
+  departmentName?: string;
   created_at: string;
   updated_at: string;
 }
@@ -31,8 +39,6 @@ export interface Task {
 export interface CreateTaskDto {
   title: string;
   description: string;
-  priority: "low" | "medium" | "high";
-  department_id: string;
   assigned_to?: string | null;
   deadline: string;
   story_point: number;
@@ -42,13 +48,18 @@ export interface UpdateTaskDto {
   title?: string;
   description?: string;
   status?: TaskStatus;
-  priority?: "low" | "medium" | "high";
   assigned_to?: string | null;
   deadline?: string;
   story_point?: number;
 }
 
 export const taskService = {
+  // Get tasks by project
+  async getByProject(projectId: string): Promise<Task[]> {
+    const response = await api.get(`/projects/${projectId}/tasks`);
+    return response.data.data;
+  },
+
   // Get all tasks (with role-based filtering)
   async getAll(): Promise<Task[]> {
     const response = await api.get("/tasks");
@@ -65,8 +76,8 @@ export const taskService = {
   },
 
   // Create task
-  async create(data: CreateTaskDto): Promise<Task> {
-    const response = await api.post("/tasks", data);
+  async create(projectId: string, data: CreateTaskDto): Promise<Task> {
+    const response = await api.post(`/projects/${projectId}/tasks`, data);
     return response.data.data || response.data;
   },
 

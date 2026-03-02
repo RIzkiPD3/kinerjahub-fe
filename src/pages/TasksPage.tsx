@@ -9,8 +9,11 @@ import {
   AlertCircle,
   CheckCircle2,
   Pencil,
+  FolderKanban,
 } from "lucide-react";
 import { taskService, type Task } from "@/services/taskService";
+import { projectService } from "@/services/projectService";
+import type { Project } from "@/types/project";
 import { departmentsService } from "@/services/departmentService";
 import { divisionService, type Division } from "@/services/divisionService";
 import { TaskStatus, TaskStatusLabels } from "@/types/task";
@@ -32,8 +35,10 @@ const TasksPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [divisionFilter, setDivisionFilter] = useState<string>("all");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
   const [departments, setDepartments] = useState<Department[]>([]);
   const [divisions, setDivisions] = useState<Division[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -55,10 +60,14 @@ const TasksPage = () => {
 
   const fetchFilterData = async () => {
     try {
-      const depts = await departmentsService.getAll();
-      const divs = await divisionService.getAll();
+      const [depts, divs, projs] = await Promise.all([
+        departmentsService.getAll(),
+        divisionService.getAll(),
+        projectService.getAll()
+      ]);
       setDepartments(depts);
       setDivisions(divs);
+      setProjects(projs);
     } catch (error) {
       console.error("Error fetching filters:", error);
     }
@@ -92,8 +101,12 @@ const TasksPage = () => {
       filtered = filtered.filter((task) => task.division?.name === divisionFilter);
     }
 
+    if (projectFilter !== "all") {
+      filtered = filtered.filter((task) => task.projectName === projectFilter);
+    }
+
     setFilteredTasks(filtered);
-  }, [searchTerm, statusFilter, departmentFilter, divisionFilter, tasks]);
+  }, [searchTerm, statusFilter, departmentFilter, divisionFilter, projectFilter, tasks]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -218,6 +231,19 @@ const TasksPage = () => {
                 </option>
               ))}
             </select>
+
+            <select
+              value={projectFilter}
+              onChange={(e) => setProjectFilter(e.target.value)}
+              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
+            >
+              <option value="all">Semua Proyek</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.name}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -285,6 +311,12 @@ const TasksPage = () => {
                           {task.division?.name && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-slate-50 text-slate-700 border border-slate-100">
                               {task.division.name}
+                            </span>
+                          )}
+                          {task.projectName && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                              <FolderKanban size={10} className="mr-1" />
+                              {task.projectName}
                             </span>
                           )}
                           {task.story_point && (
