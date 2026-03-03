@@ -2,7 +2,7 @@ export interface Department {
   id: string;
   name: string;
   division_id: string;
-  head?: string;
+  head?: string | { id: string; name: string };
   description?: string;
   status: "active" | "inactive";
   organization?: {

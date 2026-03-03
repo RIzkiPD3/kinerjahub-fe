@@ -3,7 +3,6 @@ import {
   Building,
   Plus,
   Search,
-  MoreVertical,
   Edit,
   Trash2,
   RefreshCw,
@@ -26,12 +25,10 @@ const DepartmentsPage = () => {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedDepartment, setSelectedDepartment] =
     useState<Department | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
 
   const fetchDepartments = async () => {
     setIsLoading(true);
@@ -64,17 +61,16 @@ const DepartmentsPage = () => {
         (dept) =>
           dept.name.toLowerCase().includes(term) ||
           (dept.division?.name || "").toLowerCase().includes(term) ||
-          (dept.head || "").toLowerCase().includes(term) ||
+          (typeof dept.head === "string"
+            ? dept.head
+            : dept.head?.name || ""
+          ).toLowerCase().includes(term) ||
           (dept.description || "").toLowerCase().includes(term),
       );
     }
 
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((dept) => dept.status === statusFilter);
-    }
-
     setFilteredDepartments(filtered);
-  }, [searchTerm, statusFilter, departments]);
+  }, [searchTerm, departments]);
 
   const handleCreate = async (data: CreateDepartmentDto) => {
     try {
@@ -137,20 +133,12 @@ const DepartmentsPage = () => {
   const openEditModal = (department: Department) => {
     setSelectedDepartment(department);
     setIsModalOpen(true);
-    setDropdownOpen(null);
   };
 
   const openDeleteModal = (department: Department) => {
     setSelectedDepartment(department);
     setIsDeleteModalOpen(true);
-    setDropdownOpen(null);
   };
-
-  useEffect(() => {
-    const handleClickOutside = () => setDropdownOpen(null);
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
 
   return (
     <div className="p-8 space-y-8">
@@ -193,7 +181,7 @@ const DepartmentsPage = () => {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Content */}
       <div className="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="relative w-full md:w-96">
@@ -209,20 +197,8 @@ const DepartmentsPage = () => {
               className="w-full pl-10 pr-4 py-2 bg-secondary rounded-lg border-none focus:ring-2 focus:ring-primary/20 text-sm outline-none"
             />
           </div>
-          <div className="flex items-center gap-3">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm bg-secondary border-none rounded-lg px-4 py-2 outline-none font-medium text-foreground cursor-pointer hover:bg-muted transition-colors"
-            >
-              <option value="all">Semua Status</option>
-              <option value="active">Aktif</option>
-              <option value="inactive">Non-aktif</option>
-            </select>
-          </div>
         </div>
 
-        {/* Loading State */}
         {isLoading ? (
           <div className="p-12 text-center">
             <div className="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
@@ -235,7 +211,7 @@ const DepartmentsPage = () => {
               Tidak ada data
             </h3>
             <p className="text-muted-foreground">
-              {searchTerm || statusFilter !== "all"
+              {searchTerm
                 ? "Tidak ada departemen yang sesuai dengan filter"
                 : "Belum ada departemen yang ditambahkan"}
             </p>
@@ -256,9 +232,6 @@ const DepartmentsPage = () => {
                     <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                       Kepala Departemen
                     </th>
-                    <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      Status
-                    </th>
                     <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
                       Aksi
                     </th>
@@ -276,7 +249,7 @@ const DepartmentsPage = () => {
                             {dept.name[0]}
                           </div>
                           <div>
-                            <span className="font-semibold text-foreground block">
+                            <span className="font-semibold text-foreground block text-sm">
                               {dept.name}
                             </span>
                           </div>
@@ -292,57 +265,43 @@ const DepartmentsPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm text-foreground">
+                        <div className="flex items-center gap-2 text-sm">
                           <UserCircle
                             size={16}
-                            className="text-muted-foreground"
+                            className="text-muted-foreground flex-shrink-0"
                           />
-                          {dept.head || "Belum ditentukan"}
+                          {(() => {
+                            let headName: string | null = null;
+                            if (dept.head && typeof dept.head === "object") {
+                              headName = dept.head.name;
+                            } else if (typeof dept.head === "string" && dept.head.trim()) {
+                              headName = dept.head.trim();
+                            }
+                            return headName ? (
+                              <span className="font-medium text-foreground">{headName}</span>
+                            ) : (
+                              <span className="text-muted-foreground italic">Belum ditentukan</span>
+                            );
+                          })()}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${dept.status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                            }`}
-                        >
-                          {dept.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right relative">
+                      <td className="px-6 py-4 text-right">
                         <RoleGuard allowedRoles="admin" fallback="-">
-                          <div className="relative inline-block">
+                          <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDropdownOpen(
-                                  dropdownOpen === dept.id ? null : dept.id,
-                                );
-                              }}
-                              className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-secondary rounded-lg"
+                              onClick={() => openEditModal(dept)}
+                              className="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                              title="Edit"
                             >
-                              <MoreVertical size={18} />
+                              <Edit size={16} />
                             </button>
-
-                            {dropdownOpen === dept.id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border z-10 py-1 text-left">
-                                <button
-                                  onClick={() => openEditModal(dept)}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-secondary flex items-center gap-2"
-                                >
-                                  <Edit size={16} className="text-primary" />
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => openDeleteModal(dept)}
-                                  className="w-full px-4 py-2 text-left text-sm hover:bg-secondary text-red-600 flex items-center gap-2"
-                                >
-                                  <Trash2 size={16} />
-                                  Hapus
-                                </button>
-                              </div>
-                            )}
+                            <button
+                              onClick={() => openDeleteModal(dept)}
+                              className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                              title="Hapus"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </div>
                         </RoleGuard>
                       </td>

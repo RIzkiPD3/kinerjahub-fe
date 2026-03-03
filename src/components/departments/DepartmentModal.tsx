@@ -39,7 +39,9 @@ const DepartmentModal = ({
       setFormData({
         name: department.name,
         division_id: department.division_id || department.division?.id || "",
-        head: department.head || "",
+        head: typeof department.head === "string"
+          ? department.head
+          : department.head?.name || "",
       });
     } else {
       setFormData({
@@ -78,14 +80,14 @@ const DepartmentModal = ({
       await onSubmit({
         name: formData.name.trim(),
         division_id: formData.division_id,
-        head: formData.head?.trim() || undefined,
+        head: formData.head || undefined,
       });
       onClose();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(
           err.response?.data?.message ||
-            "Terjadi kesalahan. Silakan coba lagi.",
+          "Terjadi kesalahan. Silakan coba lagi.",
         );
       } else {
         setError("Terjadi kesalahan. Silakan coba lagi.");

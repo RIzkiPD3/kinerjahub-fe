@@ -123,20 +123,6 @@ const TasksPage = () => {
     }
   };
 
-  const getPriorityBadge = (priority: string) => {
-    const colors = {
-      low: "bg-blue-100 text-blue-800 border-blue-200",
-      medium: "bg-orange-100 text-orange-800 border-orange-200",
-      high: "bg-red-100 text-red-800 border-red-200",
-    };
-    return (
-      <span
-        className={`px-2 py-0.5 text-[10px] font-bold rounded-full border ${colors[priority as keyof typeof colors] || "bg-gray-100"}`}
-      >
-        {priority ? priority.toUpperCase() : "NORMAL"}
-      </span>
-    );
-  };
 
   const handleEditTask = (task: Task) => {
     setSelectedTask(task);
@@ -280,9 +266,6 @@ const TasksPage = () => {
                   <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Deadline
                   </th>
-                  <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                    Prioritas
-                  </th>
                   <th className="px-4 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
                     Aksi
                   </th>
@@ -349,9 +332,6 @@ const TasksPage = () => {
                       <span className="text-sm font-medium text-foreground">
                         {formatDate(task.deadline)}
                       </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      {getPriorityBadge(task.priority)}
                     </td>
                     <td className="px-4 py-4 text-right">
                       <RoleGuard allowedRoles="admin" fallback="-">

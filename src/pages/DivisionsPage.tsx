@@ -209,6 +209,9 @@ const DivisionsPage = () => {
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
                     Kepala Divisi
                   </th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    Deskripsi
+                  </th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">
                     Aksi
                   </th>
@@ -238,6 +241,11 @@ const DivisionsPage = () => {
                         />
                         {div.head || "Belum ditentukan"}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs">
+                      <p className="line-clamp-2" title={div.description}>
+                        {div.description || "-"}
+                      </p>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <RoleGuard allowedRoles="admin" fallback="-">

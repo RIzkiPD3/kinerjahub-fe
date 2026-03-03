@@ -36,14 +36,6 @@ const Dashboard = () => {
             Berikut adalah ringkasan operasional perusahaan Anda hari ini.
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors shadow-sm">
-            Unduh Laporan
-          </button>
-          <button className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">
-            + Tambah Karyawan
-          </button>
-        </div>
       </div>
 
       {/* Stats Grid */}
