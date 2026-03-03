@@ -6,8 +6,8 @@ const Navbar = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <nav className="w-full bg-primary border-b border-white/10 shadow-md">
-      <div className="w-full px-6 py-4">
+    <nav className="sticky top-0 z-50 w-full bg-primary/80 backdrop-blur-md border-b border-white/10 shadow-lg">
+      <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
@@ -17,27 +17,6 @@ const Navbar = () => {
             Kinerja<span className="text-yellow-300">Hub</span>
           </Link>
 
-          {/* Menu tengah */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/dashboard"
-              className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
-            >
-              Dashboard
-            </Link>
-            <a
-              href="#about"
-              className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
-            >
-              About us
-            </a>
-            <a
-              href="#contact"
-              className="text-white/90 hover:text-white font-medium transition-all hover:scale-105"
-            >
-              Contact
-            </a>
-          </div>
 
           {/* Tombol Masuk / Dashboard */}
           <div className="flex items-center space-x-4">
