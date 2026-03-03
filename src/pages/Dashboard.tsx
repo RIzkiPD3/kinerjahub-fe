@@ -69,28 +69,52 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 gap-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-border">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold">Statistik Kehadiran Mingguan</h3>
-            <select className="text-sm bg-secondary border-none rounded-lg px-2 py-1 outline-none font-medium text-foreground">
+            <h3 className="text-lg font-bold text-foreground">Statistik Kehadiran Mingguan</h3>
+            <select className="text-sm bg-secondary border-none rounded-lg px-2 py-1 outline-none font-medium text-foreground cursor-pointer">
               <option>7 Hari Terakhir</option>
               <option>30 Hari Terakhir</option>
             </select>
           </div>
-          <div className="h-64 flex items-end justify-around gap-2 px-4">
-            {[45, 60, 40, 75, 55, 85, 70].map((h, i) => (
+          <div className="h-64 flex items-end justify-around gap-4 px-4">
+            {[
+              { day: "Sen", present: 85, sick: 5, permission: 5, absent: 5 },
+              { day: "Sel", present: 92, sick: 2, permission: 4, absent: 2 },
+              { day: "Rab", present: 78, sick: 10, permission: 5, absent: 7 },
+              { day: "Kam", present: 95, sick: 1, permission: 2, absent: 2 },
+              { day: "Jum", present: 88, sick: 4, permission: 4, absent: 4 },
+              { day: "Sab", present: 60, sick: 5, permission: 20, absent: 15 },
+              { day: "Min", present: 45, sick: 10, permission: 25, absent: 20 },
+            ].map((data, i) => (
               <div
                 key={i}
-                className="flex flex-col items-center gap-2 group cursor-pointer w-full"
+                className="flex flex-col items-center justify-end gap-2 group cursor-pointer flex-1 h-full"
               >
                 <div
-                  className="w-full bg-primary/20 group-hover:bg-primary transition-all rounded-t-lg relative"
-                  style={{ height: `${h}%` }}
+                  className="w-full bg-primary/40 group-hover:bg-primary transition-all rounded-t-lg relative"
+                  style={{ height: `${data.present}%` }}
                 >
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-foreground text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    {h}% Hadir
+                  <div className="absolute -top-28 left-1/2 -translate-x-1/2 bg-foreground text-white text-[10px] p-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                    <div className="font-bold border-b border-white/20 mb-1 pb-1">{data.day}</div>
+                    <div className="flex items-center justify-between gap-6">
+                      <span>Hadir:</span>
+                      <span className="font-bold text-green-400">{data.present}%</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-6 text-white/70">
+                      <span>Sakit:</span>
+                      <span>{data.sick}%</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-6 text-white/70">
+                      <span>Izin:</span>
+                      <span>{data.permission}%</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-6 text-white/70">
+                      <span>Alpa:</span>
+                      <span>{data.absent}%</span>
+                    </div>
                   </div>
                 </div>
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">
-                  {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"][i]}
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">
+                  {data.day}
                 </span>
               </div>
             ))}
